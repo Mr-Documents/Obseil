@@ -1,0 +1,56 @@
+name: obseil
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-obseil}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-obseil}
+      POSTGRES_DB: ${POSTGRES_DB:-obseil}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - obseil_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-obseil} -d ${POSTGRES_DB:-obseil}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      OBSEIL_ENV: ${OBSEIL_ENV:-development}
+      OBSEIL_DEBUG: ${OBSEIL_DEBUG:-true}
+      OBSEIL_LOG_LEVEL: ${OBSEIL_LOG_LEVEL:-INFO}
+      OBSEIL_SECRET_KEY: ${OBSEIL_SECRET_KEY:-dev-only-secret-change-me-please-0123456789}
+      OBSEIL_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-obseil}:${POSTGRES_PASSWORD:-obseil}@db:5432/${POSTGRES_DB:-obseil}
+      OBSEIL_CORS_ORIGINS: ${OBSEIL_CORS_ORIGINS:-http://localhost:5173,http://localhost:4173,http://localhost:3000}
+      OBSEIL_STORAGE_PATH: /app/var/datasets
+    ports:
+      - "8000:8000"
+    volumes:
+      - obseil_datasets:/app/var/datasets
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000/api/v1}
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "3000:8080"
+
+volumes:
+  obseil_pgdata:
+  obseil_datasets:

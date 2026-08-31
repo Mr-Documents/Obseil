@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Node
+node_modules/
+dist/
+.vite/
+coverage/
+*.tsbuildinfo
+
+# Playwright
+/e2e/test-results/
+/e2e/playwright-report/
+/e2e/.auth/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Local runtime data (uploaded datasets)
+/backend/var/
+/var/
+
+# Editors / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json

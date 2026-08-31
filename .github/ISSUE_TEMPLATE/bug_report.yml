@@ -1,0 +1,74 @@
+name: Bug report
+description: Something in Obseil does not work as documented.
+labels: ['bug', 'needs triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please do **not** attach real customer data —
+        a small synthetic file that reproduces the problem is far more useful.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, and what did Obseil do instead of what you expected?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: input
+    id: request-id
+    attributes:
+      label: Request ID
+      description: API errors include a `request_id`. Paste it here if you have one.
+      placeholder: 9f2c4b1ad0e7
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Authentication
+        - Projects
+        - Dataset upload
+        - Profiling
+        - Quality detection
+        - Anomaly detection
+        - Dashboard
+        - Findings
+        - Analysis history
+        - Report export
+        - Docker / setup
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      value: |
+        - How you run Obseil: Docker Compose / local
+        - OS:
+        - Browser (if a UI issue):
+        - Commit or version:
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Backend logs or browser console output. Redact anything sensitive.
+      render: shell

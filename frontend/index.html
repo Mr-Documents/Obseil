@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/obseil-mark.svg" />
+    <meta name="theme-color" content="#0a0c11" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#fbfbfc" media="(prefers-color-scheme: light)" />
+    <meta
+      name="description"
+      content="Obseil — AI-powered data quality intelligence. Uncover what's hidden in your data."
+    />
+    <title>Obseil — Uncover what's hidden in your data</title>
+    <script>
+      // Apply the persisted theme before first paint to avoid a flash of the
+      // wrong colour scheme. Kept inline and tiny on purpose.
+      (function () {
+        try {
+          var stored = localStorage.getItem('obseil.theme');
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (stored === 'dark' || (stored !== 'light' && prefersDark)) {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (e) {
+          /* storage unavailable — fall back to the light theme */
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

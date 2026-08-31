@@ -1,0 +1,17 @@
+{
+  "name": "obseil-e2e",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "End-to-end tests for Obseil",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "report": "playwright show-report",
+    "install:browsers": "playwright install --with-deps chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
+}
