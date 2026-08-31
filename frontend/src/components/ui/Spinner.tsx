@@ -1,7 +1,7 @@
 import { cn } from '@/utils/cn';
 
 /**
- * Indeterminate progress indicator. Decorative by default — the surrounding
+ * Indeterminate progress indicator. Decorative by default - the surrounding
  * control is expected to carry `aria-busy`, so screen readers are not spammed
  * with a redundant "loading" announcement.
  */

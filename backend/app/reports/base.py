@@ -1,7 +1,7 @@
 """Report format interface and the data every exporter receives.
 
 An exporter turns one analysis into one file. It is handed a fully assembled
-:class:`ReportData` — it never queries the database, so a new format is a pure
+:class:`ReportData` - it never queries the database, so a new format is a pure
 rendering problem and can be unit-tested against a fixture.
 
 Adding a format: subclass :class:`ReportExporter`, register it in

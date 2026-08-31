@@ -218,7 +218,7 @@ export function DatasetFindingsPage() {
             description={
               hasFilters
                 ? 'Try widening the filters, or clear them to see everything.'
-                : 'Every quality check passed on this dataset. That is a good sign — and Obseil records which checks ran, not just that they passed.'
+                : 'Every quality check passed on this dataset. That is a good sign - and Obseil records which checks ran, not just that they passed.'
             }
             action={
               hasFilters ? (
@@ -263,11 +263,11 @@ export function DatasetFindingsPage() {
                         </button>
                       </TD>
                       <TD className="font-mono text-[12px] text-fg-muted">
-                        {finding.column_name ?? '—'}
+                        {finding.column_name ?? '-'}
                       </TD>
                       <TD numeric>
                         {finding.affected_rows === null ? (
-                          '—'
+                          '-'
                         ) : (
                           <>
                             {formatNumber(finding.affected_rows)}
@@ -290,7 +290,7 @@ export function DatasetFindingsPage() {
 
             <CardBody className="flex flex-wrap items-center justify-between gap-3 border-t border-border-default px-4 py-3">
               <p className="tabular text-[13px] text-fg-muted" aria-live="polite">
-                {formatNumber(offset + 1)}–{formatNumber(offset + data.items.length)} of{' '}
+                {formatNumber(offset + 1)}-{formatNumber(offset + data.items.length)} of{' '}
                 {formatNumber(total)}
               </p>
               <div className="flex gap-2">

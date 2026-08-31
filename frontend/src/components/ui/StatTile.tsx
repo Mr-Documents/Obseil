@@ -24,7 +24,7 @@ const TONES = {
 
 /**
  * A single headline figure. Deliberately plain: the number is the content, and
- * anything competing with it — a chart, a gradient, a badge — makes a dense
+ * anything competing with it - a chart, a gradient, a badge - makes a dense
  * row of tiles harder to scan, not easier.
  */
 export function StatTile({

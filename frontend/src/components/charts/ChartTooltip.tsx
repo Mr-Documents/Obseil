@@ -20,7 +20,7 @@ interface ChartTooltipProps {
 /**
  * One tooltip for every chart in the product.
  *
- * Values wear text tokens, not the series colour — the swatch beside them
+ * Values wear text tokens, not the series colour - the swatch beside them
  * carries the identity. Coloured numbers are harder to read and imply that the
  * hue means something about the value, which it does not.
  */
@@ -52,7 +52,7 @@ export function ChartTooltip({
             <span className="tabular ml-auto font-medium text-fg">
               {formatValue && typeof entry.value === 'number'
                 ? formatValue(entry.value, entry)
-                : String(entry.value ?? '—')}
+                : String(entry.value ?? '-')}
             </span>
           </li>
         ))}

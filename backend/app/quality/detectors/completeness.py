@@ -2,9 +2,9 @@
 
 Three distinct problems live here, and they are genuinely different:
 
-* a column with *some* values missing — usually fixable
-* a column with *no* values at all — carries no information
-* a *row* with most of its fields missing — a broken record, invisible to any
+* a column with *some* values missing - usually fixable
+* a column with *no* values at all - carries no information
+* a *row* with most of its fields missing - a broken record, invisible to any
   per-column check because each individual column may look fine
 """
 
@@ -18,7 +18,7 @@ from app.quality.types import DetectionMethod, FindingDraft, FindingType, Severi
 #: top-down: the first band whose threshold is met wins.
 #:
 #: The boundaries are not arbitrary:
-#:   <5%   list-wise deletion costs little and most tools cope — not reported
+#:   <5%   list-wise deletion costs little and most tools cope - not reported
 #:   >=5%  low      joins and aggregates no longer cover every row
 #:   >=15% medium   dropping incomplete rows now removes a meaningful share,
 #:                  and imputing would visibly change the distribution
@@ -144,7 +144,7 @@ class MissingValueDetector(QualityDetector):
         if severity is Severity.MEDIUM:
             return (
                 "Decide explicitly between dropping the incomplete rows and imputing, and record "
-                "which you chose — the two give different answers."
+                "which you chose - the two give different answers."
             )
         return (
             "Confirm the gaps are expected, then handle them consistently wherever the "

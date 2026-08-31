@@ -50,10 +50,10 @@ def load_dataset(storage_key: str, file_format: str) -> LoadResult:
 
     Two ceilings apply, both configurable:
 
-    * ``max_analysis_rows`` — beyond this the dataset is refused outright,
+    * ``max_analysis_rows`` - beyond this the dataset is refused outright,
       because a partial answer presented as a whole-file answer is worse than
       no answer.
-    * ``profile_sample_rows`` — below the hard ceiling but above this, the
+    * ``profile_sample_rows`` - below the hard ceiling but above this, the
       analysis runs on a deterministic head sample. The profile records that it
       was sampled and the UI says so.
     """

@@ -208,7 +208,7 @@ def _cell(value: object) -> str | None:
 
     Integral floats drop their ``.0``. pandas widens an integer column to
     float64 as soon as it contains one missing value, so without this an id of
-    ``7`` would be shown to the user as ``7.0`` — a value that was never in
+    ``7`` would be shown to the user as ``7.0`` - a value that was never in
     their file.
     """
     if value is None or (isinstance(value, float) and math.isnan(value)):

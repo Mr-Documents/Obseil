@@ -1,6 +1,6 @@
 """Shared test data helpers.
 
-The committed sample datasets are the fixtures of record — see
+The committed sample datasets are the fixtures of record - see
 ``data/samples/README.md``. This module locates them and provides small
 in-memory frames for tests that want to isolate one condition exactly.
 """

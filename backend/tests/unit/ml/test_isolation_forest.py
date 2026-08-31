@@ -132,8 +132,8 @@ class TestDetection:
 
 class TestAgainstTheSampleDatasets:
     def test_finds_every_injected_multivariate_anomaly(self) -> None:
-        """The twelve rows in the fixture are ordinary in every single column —
-        the deterministic engine reports nothing on this file — but each is a
+        """The twelve rows in the fixture are ordinary in every single column -
+        the deterministic engine reports nothing on this file - but each is a
         one-item basket priced like ten, bought by an 18-year-old with a
         maximal loyalty balance. Finding them is the entire case for the ML
         component."""
@@ -156,8 +156,8 @@ class TestAgainstTheSampleDatasets:
         assert set(injected).issubset(flagged), "every injected anomaly must be found"
 
     def test_flags_only_a_small_share_of_a_clean_dataset(self) -> None:
-        """A handful of candidates on clean data is expected — unsupervised
-        detection has no ground truth — but it must stay a handful."""
+        """A handful of candidates on clean data is expected - unsupervised
+        detection has no ground truth - but it must stay a handful."""
         frame = load_sample("clean_transactions.csv")
         result = detect_anomalies(frame, profile_dataset(frame))
 

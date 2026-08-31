@@ -58,7 +58,7 @@ class FindingCategory(StrEnum):
     A ``rule`` finding is a *fact* about the data, derived deterministically.
     An ``anomaly`` is a *candidate* surfaced by an unsupervised model, which
     may be perfectly legitimate. Conflating the two would overstate what the
-    model knows — see ``docs/METHODOLOGY.md``.
+    model knows - see ``docs/METHODOLOGY.md``.
     """
 
     RULE = "rule"

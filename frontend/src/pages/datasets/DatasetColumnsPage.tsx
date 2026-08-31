@@ -51,8 +51,8 @@ function ColumnDetail({ column }: { column: ColumnProfile }) {
   }
   if (column.datetime) {
     facts.push(
-      { label: 'Earliest', value: column.datetime.earliest ?? '—' },
-      { label: 'Latest', value: column.datetime.latest ?? '—' },
+      { label: 'Earliest', value: column.datetime.earliest ?? '-' },
+      { label: 'Latest', value: column.datetime.latest ?? '-' },
       { label: 'Span (days)', value: formatStatistic(column.datetime.range_days) },
     );
   }

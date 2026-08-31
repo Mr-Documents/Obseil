@@ -1,7 +1,7 @@
 """Anomaly detector registry.
 
-The MVP ships one algorithm. The registry exists so that adding a second —
-Local Outlier Factor, DBSCAN — is a two-line change plus a module, rather than
+The MVP ships one algorithm. The registry exists so that adding a second -
+Local Outlier Factor, DBSCAN - is a two-line change plus a module, rather than
 a refactor of the pipeline. Note that a distance-based detector must scale its
 features first; see ``app.ml.features``.
 """

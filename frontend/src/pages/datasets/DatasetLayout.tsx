@@ -224,7 +224,7 @@ export function DatasetLayout() {
         }
       >
         <p className="text-[13px] text-fg-muted">
-          <span className="font-medium text-fg">{dataset.name}</span> —{' '}
+          <span className="font-medium text-fg">{dataset.name}</span> -{' '}
           {formatBytes(dataset.size_bytes)}
         </p>
       </Modal>

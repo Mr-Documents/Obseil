@@ -7,7 +7,7 @@ transparent penalty sum: every finding costs points, the cost is
 ``severity weight x how much of the dataset it affects``, and each quality
 dimension has a ceiling so no one category can dominate. Every term is returned
 alongside the number, so the UI can show precisely why a dataset scored what it
-scored — and so a user who disagrees can point at the specific line they
+scored - and so a user who disagrees can point at the specific line they
 disagree with.
 
     score = 100 - sum over dimensions of min(dimension penalty, dimension cap)
@@ -16,7 +16,7 @@ Design decisions worth stating:
 
 * **Severity dominates, coverage modulates.** A critical finding affecting 5%
   of rows should outrank a low finding affecting all of them. The coverage
-  multiplier therefore spans only 0.5x to 1.5x — enough to distinguish "one bad
+  multiplier therefore spans only 0.5x to 1.5x - enough to distinguish "one bad
   row" from "the whole column", not enough to let a trivial issue outweigh a
   serious one.
 * **Dimensions are capped.** A file with forty partially-empty columns is bad,

@@ -6,7 +6,7 @@ The guiding principle throughout: **a detector that fires on everything is as
 useless as one that fires on nothing.** Every threshold below is chosen to keep
 the clean baseline dataset at zero findings while still catching every defect
 deliberately injected into the other fixtures. That property is enforced by
-tests, not by intention — see `backend/tests/unit/quality/test_engine.py`.
+tests, not by intention - see `backend/tests/unit/quality/test_engine.py`.
 
 ---
 
@@ -20,12 +20,12 @@ model (`category`), in the API, and in the UI.
 | Produced by | Deterministic statistics | Unsupervised model |
 | Claim being made | *This is a fact about the data* | *This row is unusual; look at it* |
 | Reproducible | Exactly, every run | Yes, given the same seed and data |
-| Can be "wrong" | Only if the rule is wrong | Yes — legitimately unusual rows exist |
+| Can be "wrong" | Only if the rule is wrong | Yes - legitimately unusual rows exist |
 
 **Rules are used wherever the answer is knowable exactly.** Counting nulls does
 not need a model. Neither does finding duplicated rows, constant columns, or
 values outside Tukey's fences. Using ML for any of these would be slower, less
-accurate, less explainable, and — the important part — *dishonest about what is
+accurate, less explainable, and - the important part - *dishonest about what is
 actually being computed*.
 
 **ML is used for the one thing rules cannot do:** finding rows that are unusual
@@ -34,7 +34,7 @@ sits comfortably inside its own column's normal range. See §4.
 
 The `anomalous_transactions.csv` fixture exists to make this concrete: it
 contains twelve rows that are implausible in combination, and the entire rule
-engine reports **zero findings** on it. That is not a gap — it is the argument
+engine reports **zero findings** on it. That is not a gap - it is the argument
 for having an ML component at all.
 
 ---
@@ -85,7 +85,7 @@ Getting this wrong is costly in both directions: treat a measurement as a key
 and every continuous column is reported as a "broken key"; miss a real key and
 duplicate identifiers go unreported.
 
-Uniqueness alone cannot separate them — a float measurement is naturally ~95%
+Uniqueness alone cannot separate them - a float measurement is naturally ~95%
 distinct, while a genuinely broken key may be only 85% distinct. So two signals
 are combined:
 
@@ -116,7 +116,7 @@ Every finding answers five questions, and the schema has a field for each:
 | How was it detected? | `detection_method`, `details` |
 | What should I do? | `recommendation` |
 
-### Missing values — `null_count`
+### Missing values - `null_count`
 
 Columns below **5% missing are not reported at all**. Every real export has a
 few gaps, and flagging them teaches people to ignore findings.
@@ -131,14 +131,14 @@ few gaps, and flagging them teaches people to ignore findings.
 A column with **no** values at all is a separate finding (`empty_column`, high):
 it is a different problem with a different fix.
 
-### Incomplete rows — `row_completeness`
+### Incomplete rows - `row_completeness`
 
 Rows missing **more than half** their fields. Deliberately separate from the
 column check, because a row missing 8 of its 11 fields can sit in a dataset
 where no individual column looks bad. These records carry almost no information
 but still count towards row totals.
 
-### Duplicate rows — `exact_row_match`
+### Duplicate rows - `exact_row_match`
 
 Byte-for-byte repeats across every column. Counted as *repeats*, not
 occurrences: three identical rows are two duplicates. All copies including the
@@ -151,35 +151,35 @@ first are sampled, because a reviewer needs the original to compare against.
 | > 5% | High |
 | > 20% | Critical |
 
-### Duplicate identifiers — `uniqueness_check`
+### Duplicate identifiers - `uniqueness_check`
 
 Repeated values in a key-like column (§2). Row counts are fine; **joins are
-not** — a join on this column fans out and silently multiplies rows. Always
+not** - a join on this column fans out and silently multiplies rows. Always
 high severity for that reason.
 
-### Constant columns — `distinct_count`
+### Constant columns - `distinct_count`
 
 One distinct value. **Low severity on purpose**: this is waste, not corruption.
 Scoring it harshly would drown out findings that actually corrupt results.
 
-### High cardinality — `cardinality_ratio`
+### High cardinality - `cardinality_ratio`
 
 A narrow, specific target: a column that is neither a usable category nor a
-usable key — ≥50 distinct values **and** ≥70% distinct, excluding identifiers.
+usable key - ≥50 distinct values **and** ≥70% distinct, excluding identifiers.
 
 311 distinct customers across 600 transactions (52%) is an ordinary foreign key
 and is **not** flagged. A column that is 75% distinct with hundreds of values
-usually is free-text entry masquerading as a category — `London`, `london`,
+usually is free-text entry masquerading as a category - `London`, `london`,
 `London ` counted as three.
 
-### Numbers stored as text — `type_inference`
+### Numbers stored as text - `type_inference`
 
 Reported as a *type* problem, not a value problem. Nothing is wrong with the
 numbers; everything downstream will sort them alphabetically and refuse to sum
 them. Escalated to medium when some values will not convert, because those
-become nulls on cast — silently losing rows.
+become nulls on cast - silently losing rows.
 
-### Negative values — `sign_check`
+### Negative values - `sign_check`
 
 The hardest detector to do honestly, because Obseil does not know what your
 columns mean and must not invent business rules.
@@ -191,7 +191,7 @@ applied:
    negative has a legitimate negative range.
 2. **Either** the column name denotes a quantity that cannot be negative
    (`amount`, `quantity`, `age`, `count`, …) **or** the column is integer-valued
-   — counts far more often than measurements.
+   - counts far more often than measurements.
 
 Requiring both keeps a profit-and-loss column from being flagged just because it
 happens to be mostly positive. Names like `balance`, `change` and `score` are
@@ -200,14 +200,14 @@ deliberately excluded from the vocabulary: negatives are normal for them.
 This remains a heuristic, and it is exactly why the false-positive verdict
 exists.
 
-### Invalid dates — `date_parsing`
+### Invalid dates - `date_parsing`
 
 Only runs on columns already inferred to be dates, which requires 95% of values
 to parse. That gate is what makes the leftovers meaningful: they are the
 exceptions in a column that is otherwise clearly a date. Catches both
 unparseable text and impossible dates (`2026-13-45`, `31/02/2026`).
 
-### Empty strings and whitespace — `string_inspection`
+### Empty strings and whitespace - `string_inspection`
 
 Both matter precisely because **pandas does not treat them as missing**. A
 column can report as 100% complete while a tenth of its values are `""` or
@@ -215,7 +215,7 @@ column can report as 100% complete while a tenth of its values are `""` or
 
 ---
 
-### Outlier detection — `iqr`, cross-checked with `z_score`
+### Outlier detection - `iqr`, cross-checked with `z_score`
 
 **IQR (Tukey's fences)** is the primary method: values outside
 `[Q1 − 1.5·IQR, Q3 + 1.5·IQR]`. Quartiles are rank statistics, so the fences are
@@ -229,8 +229,8 @@ looked for. It is included because it is the method most people expect, and
 showing both counts makes the difference visible.
 
 **Skew correction.** Tukey's fences assume a roughly symmetric distribution.
-Applied directly to a right-skewed column — transaction amounts, durations,
-almost anything money-shaped — they flag several percent of perfectly ordinary
+Applied directly to a right-skewed column - transaction amounts, durations,
+almost anything money-shaped - they flag several percent of perfectly ordinary
 values, because the upper fence sits inside a long, legitimate tail. For a
 strongly skewed (`skew > 1`), non-negative column, the fences are therefore
 computed on `log1p(x)` and mapped back with `expm1`. The finding records
@@ -246,12 +246,12 @@ log-scale fences find **exactly** the 15 injected extremes.
 - Fewer than 20 rows: the detector does not run. On a dozen rows, "outside the
   fences" is noise, and a confident-looking finding derived from it would be
   worse than silence.
-- Zero IQR (half the values identical): skipped — the fences collapse and would
+- Zero IQR (half the values identical): skipped - the fences collapse and would
   flag everything else.
 - Below 0.5% of rows: not reported. Some points sit outside the fences in any
   real distribution.
 - Above 25% of rows: not reported. At that point the "outliers" *are* the
-  distribution — a heavy tail, not a defect.
+  distribution - a heavy tail, not a defect.
 
 **An outlier is not an error.** It is a value far from the rest of its column,
 which may be entirely legitimate. The finding says exactly that, and recommends
@@ -460,7 +460,7 @@ To add a detector, see [CONTRIBUTING.md](../CONTRIBUTING.md). The bar for a new
 one is:
 
 1. It is **deterministic** and reproducible.
-2. It **explains itself** — all five questions answered.
+2. It **explains itself** - all five questions answered.
 3. It stays **silent on `clean_transactions.csv`**.
 4. It is justified from the data, not from an assumption about what the data
    means.

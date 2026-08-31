@@ -18,7 +18,7 @@ down_revision: str | None = "0001_users_projects"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
-#: Matches ``app.db.base.JSONColumn`` — JSONB on PostgreSQL, JSON elsewhere.
+#: Matches ``app.db.base.JSONColumn`` - JSONB on PostgreSQL, JSON elsewhere.
 JSON_COLUMN = sa.JSON().with_variant(JSONB(), "postgresql")
 
 

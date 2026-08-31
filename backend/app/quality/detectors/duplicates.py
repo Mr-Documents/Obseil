@@ -2,9 +2,9 @@
 
 Two different failures, deliberately reported separately:
 
-* **Duplicate rows** — the same record appears more than once. Every count,
+* **Duplicate rows** - the same record appears more than once. Every count,
   sum and average over the dataset is inflated.
-* **Duplicate identifiers** — a column that is otherwise a key repeats a value.
+* **Duplicate identifiers** - a column that is otherwise a key repeats a value.
   Row counts are fine; joins are not.
 """
 
@@ -44,7 +44,7 @@ class DuplicateRowDetector(QualityDetector):
         percentage = context.profile.duplicate_row_percentage
         severity = severity_for_duplicates(percentage)
         # `keep=False` marks every copy, including the first, which is what a
-        # reviewer wants to look at — showing only the later copies hides the
+        # reviewer wants to look at - showing only the later copies hides the
         # original they need to compare against.
         all_copies = context.frame.duplicated(keep=False)
 
@@ -81,7 +81,7 @@ class DuplicateRowDetector(QualityDetector):
 class DuplicateIdentifierDetector(QualityDetector):
     """Repeated values in a column that is otherwise a key.
 
-    Only key-like columns are considered — see ``DetectionContext.is_key_like``.
+    Only key-like columns are considered - see ``DetectionContext.is_key_like``.
     Without that gate, every low-cardinality categorical column would be
     reported as having "duplicates", which is simply what a category is.
     """
@@ -112,7 +112,7 @@ class DuplicateIdentifierDetector(QualityDetector):
                     title=f"“{column.name}” looks like an identifier but repeats values",
                     description=(
                         f"“{column.name}” is {column.unique_percentage:.1f}% distinct, so it reads "
-                        f"as a key — but {affected:,} rows share a value with another row."
+                        f"as a key - but {affected:,} rows share a value with another row."
                     ),
                     impact=(
                         "Any join on this column will fan out, silently multiplying rows. "

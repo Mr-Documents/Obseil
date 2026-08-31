@@ -2,7 +2,7 @@
 
 A detector is a small, pure class: given the loaded frame and its profile, it
 returns zero or more :class:`FindingDraft` objects. It never touches the
-database, the request, or another detector's output — which is what makes each
+database, the request, or another detector's output - which is what makes each
 one testable with a five-row DataFrame.
 """
 
@@ -30,7 +30,7 @@ MAX_SAMPLE_ROWS = 20
 #: Getting this wrong in either direction is costly: treat a measurement as a
 #: key and every continuous column is reported as a "broken key"; miss a real
 #: key and duplicate identifiers go unreported. Uniqueness alone cannot
-#: separate them — a float measurement is naturally ~95% distinct, while a
+#: separate them - a float measurement is naturally ~95% distinct, while a
 #: genuinely broken key may be only 85% distinct.
 #:
 #: Two signals are therefore combined:
@@ -42,7 +42,7 @@ MAX_SAMPLE_ROWS = 20
 #:    distinct): a 0-5000 integer measurement across 500 rows is ~95% distinct
 #:    purely by the birthday problem, so anything lower would misread ordinary
 #:    measurements as keys. A column *named* ``transaction_id``, though, is
-#:    asserting that it identifies a transaction — for those, a much lower bar
+#:    asserting that it identifies a transaction - for those, a much lower bar
 #:    applies, because the gap below 100% is exactly the defect worth reporting.
 #:
 #: The accepted trade-off: a badly broken key with an unconventional name and
@@ -135,7 +135,7 @@ class QualityDetector(ABC):
     """Base class for every deterministic quality check.
 
     Subclasses set ``name`` and implement :meth:`detect`. Register the class in
-    ``app.quality.registry`` and it runs automatically — see CONTRIBUTING.md.
+    ``app.quality.registry`` and it runs automatically - see CONTRIBUTING.md.
     """
 
     #: Stable identifier used in logs and error messages.

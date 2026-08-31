@@ -16,7 +16,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 /**
  * The single button primitive. Every clickable action in Obseil uses it so
  * that focus rings, disabled styling and loading behaviour are identical
- * everywhere. A loading button is also disabled — it cannot be double-submitted.
+ * everywhere. A loading button is also disabled - it cannot be double-submitted.
  */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   {

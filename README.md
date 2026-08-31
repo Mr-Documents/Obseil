@@ -24,11 +24,11 @@ Upload a CSV or XLSX file and Obseil answers one question:
 It profiles the data, runs a suite of deterministic quality detectors, runs an
 unsupervised anomaly model over the numeric feature space, turns everything it
 finds into individually reviewable **findings**, and rolls those findings up
-into an explainable **0–100 quality score**.
+into an explainable **0-100 quality score**.
 
 Every number it shows you can be traced back to the rule or the statistic that
 produced it. Obseil never says "the model thinks this is wrong" without also
-saying which columns pushed the row away from the rest — and it never claims to
+saying which columns pushed the row away from the rest - and it never claims to
 know *why*.
 
 ![The dataset dashboard: quality score, per-dimension breakdown, severity tiles and charts](docs/screenshots/dashboard.png)
@@ -112,13 +112,13 @@ written down rather than glossed over.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  React SPA — TanStack Query owns all server state       │
+│  React SPA - TanStack Query owns all server state       │
 └───────────────────────────┬─────────────────────────────┘
                             │  JSON over HTTP, bearer tokens
 ┌───────────────────────────▼─────────────────────────────┐
-│  FastAPI routes — thin: validate, authorize, delegate    │
+│  FastAPI routes - thin: validate, authorize, delegate    │
 ├─────────────────────────────────────────────────────────┤
-│  Services — business logic, transactions, ownership      │
+│  Services - business logic, transactions, ownership      │
 ├──────────┬──────────┬──────────┬──────────┬─────────────┤
 │ profiling│ quality  │    ml    │ reports  │   storage   │
 │  pandas  │detectors │ sklearn  │ReportLab │  pluggable  │
@@ -176,13 +176,13 @@ unusual *given the joint distribution of every numeric column at once*.
 Isolation Forest, because it isolates rare points directly rather than modelling
 density, needs no labels, and scales linearly.
 [Features are not scaled](docs/METHODOLOGY.md#feature-preparation), because the
-algorithm's axis-aligned splits are invariant to per-feature rescaling —
+algorithm's axis-aligned splits are invariant to per-feature rescaling -
 scaling would be cargo-culting.
 
 The threshold is the interesting part. scikit-learn's `contamination="auto"`
 flagged **49% of a known-clean dataset**, which is useless. Obseil instead uses
 the forest for *ranking* and derives the cut-off from the score distribution
-with the [Iglewicz–Hoaglin modified z-score](docs/METHODOLOGY.md#where-the-threshold-comes-from)
+with the [Iglewicz-Hoaglin modified z-score](docs/METHODOLOGY.md#where-the-threshold-comes-from)
 (cut-off 3.5, MAD-based, mean-absolute-deviation fallback), plus a hard 2%
 ceiling. On the purpose-built fixture this finds 12 of 12 planted anomalies and
 zero on the clean file.
@@ -193,14 +193,14 @@ flagged row. **It never claims to know the cause.**
 ### Quality score
 
 `score = 100 − Σ penalties`, where each finding's penalty is a severity weight
-(critical 30, high 18, medium 8, low 2) times a coverage multiplier (0.5×–1.5×,
+(critical 30, high 18, medium 8, low 2) times a coverage multiplier (0.5×-1.5×,
 by how much of the dataset it touches), and each dimension's total is capped.
 The caps sum to 120, so no single dimension can zero the score alone. The API
 returns the derivation, not just the number.
 
 ## API
 
-Interactive docs are served at `/docs` (Swagger) and `/redoc` — both are
+Interactive docs are served at `/docs` (Swagger) and `/redoc` - both are
 disabled when `OBSEIL_ENV=production`.
 
 | Method | Path | Purpose |
@@ -250,7 +250,7 @@ docker compose up --build
 > **Note.** `docker compose config` validates, and both images build in CI on
 > every push (the `docker` job in [`ci.yml`](.github/workflows/ci.yml)). The
 > full three-service stack has **not** been run end-to-end on a developer
-> machine — if you hit a problem with it, please open an issue rather than
+> machine - if you hit a problem with it, please open an issue rather than
 > assume you are holding it wrong.
 
 ### Without Docker
@@ -335,7 +335,7 @@ Two things the test suite does that are worth calling out:
   `backend/tests/api/test_security.py`, which fails if any endpoint is ever
   added without an ownership check.
 
-The E2E suite found two real bugs the unit tests could not — see
+The E2E suite found two real bugs the unit tests could not - see
 [`e2e/README.md`](e2e/README.md).
 
 ## Continuous integration
@@ -396,7 +396,7 @@ Both images are production-shaped already: the API runs as a non-root user
 behind uvicorn, and the frontend is a static bundle served by nginx. To deploy:
 
 1. Set `OBSEIL_ENV=production`, `OBSEIL_DEBUG=false` and a real
-   `OBSEIL_SECRET_KEY` — the app will refuse to start otherwise.
+   `OBSEIL_SECRET_KEY` - the app will refuse to start otherwise.
 2. Point `OBSEIL_DATABASE_URL` at a managed PostgreSQL instance and run
    `alembic upgrade head` as a release step.
 3. Set `OBSEIL_CORS_ORIGINS` to the web origin, and terminate TLS at the proxy.
@@ -410,16 +410,16 @@ The security posture, including what is **not** yet handled, is written up in
 
 Deliberately out of scope for the MVP, and none of them require a rewrite:
 
-- **S3-compatible storage** — `StorageBackend` is already the seam.
-- **Background analysis** — move `analyze_dataset` behind a queue when files get
+- **S3-compatible storage** - `StorageBackend` is already the seam.
+- **Background analysis** - move `analyze_dataset` behind a queue when files get
   big enough that an inline request is the wrong shape.
-- **More detectors** — referential integrity across datasets, regex/format
+- **More detectors** - referential integrity across datasets, regex/format
   validation, cross-column consistency rules.
-- **Learned severity** — feed triage feedback back into severity ranking, once
+- **Learned severity** - feed triage feedback back into severity ranking, once
   there is enough of it to be more than a guess.
-- **Scheduled monitoring** — re-analyse a source on a schedule and alert on
+- **Scheduled monitoring** - re-analyse a source on a schedule and alert on
   score regressions; the history and comparison machinery already exists.
-- **Team accounts** — projects are single-owner today.
+- **Team accounts** - projects are single-owner today.
 
 ## Contributing
 

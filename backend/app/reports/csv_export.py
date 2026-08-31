@@ -1,7 +1,7 @@
 """CSV findings export.
 
 One row per finding, with every field a reader would need to triage it outside
-Obseil — including the impact and the recommendation, because a findings export
+Obseil - including the impact and the recommendation, because a findings export
 that lists only what was found and not what to do about it is a to-do list with
 the instructions removed.
 """

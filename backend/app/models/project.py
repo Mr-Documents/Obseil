@@ -1,4 +1,4 @@
-"""Project model — the container for datasets and their analyses."""
+"""Project model - the container for datasets and their analyses."""
 
 from __future__ import annotations
 

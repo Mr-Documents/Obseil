@@ -12,7 +12,7 @@ import { SeverityBreakdownChart } from './SeverityBreakdownChart';
 /**
  * Charts are tested through the accessible table each one renders alongside
  * the SVG. jsdom gives an SVG no layout, so asserting on rendered bars would
- * test nothing — but the table is the data, and it is what a screen-reader
+ * test nothing - but the table is the data, and it is what a screen-reader
  * user actually gets.
  */
 
@@ -149,8 +149,8 @@ describe('AnomalyScoreChart', () => {
     render(<AnomalyScoreChart anomalies={[anomaly(95, 0), anomaly(92, 1), anomaly(45, 2)]} />);
 
     const table = within(screen.getByRole('table', { name: /flagged rows by unusualness/i }));
-    expect(table.getByRole('rowheader', { name: '90–100' }).closest('tr')).toHaveTextContent('2');
-    expect(table.getByRole('rowheader', { name: '40–50' }).closest('tr')).toHaveTextContent('1');
+    expect(table.getByRole('rowheader', { name: '90-100' }).closest('tr')).toHaveTextContent('2');
+    expect(table.getByRole('rowheader', { name: '40-50' }).closest('tr')).toHaveTextContent('1');
   });
 
   it('states that the scale is dataset-relative', () => {

@@ -12,17 +12,41 @@ from contextlib import contextmanager
 
 from sqlalchemy import Engine, create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy.pool import StaticPool
+from sqlalchemy.pool import QueuePool, StaticPool
 
 from app.core.config import settings
 
 
+def _is_in_memory_sqlite(url: str) -> bool:
+    """True for SQLite URLs whose database lives inside the connection itself.
+
+    Both spellings count: an explicit ``:memory:`` and the bare ``sqlite://``
+    with no path at all.
+    """
+    path = url.partition("://")[2].partition("?")[0].lstrip("/")
+    return path in {"", ":memory:"}
+
+
 def _engine_kwargs(url: str) -> dict[str, object]:
-    """Engine options differ between SQLite (tests) and PostgreSQL (real)."""
+    """Engine options differ between SQLite and PostgreSQL (production)."""
     if url.startswith("sqlite"):
+        # `check_same_thread` is off because route handlers are plain `def`, so
+        # FastAPI runs them in a threadpool and a connection legitimately moves
+        # between threads. The pool still hands each connection to one thread at
+        # a time, which is what makes that safe.
+        #
+        # The pool class is the part that matters. An in-memory database *is*
+        # its connection - open a second one and you get a second, empty
+        # database - so it needs StaticPool's single shared connection. A
+        # file-backed database is the exact opposite: StaticPool would funnel
+        # every concurrent request through one connection, and SQLite's driver
+        # does not serialise concurrent use of a single connection. That failed
+        # as `InterfaceError: bad parameter or other API misuse` and, worse, as
+        # queries returning no rows - a freshly created project answering 404 -
+        # whenever the dashboard fired its four requests at once.
         return {
             "connect_args": {"check_same_thread": False},
-            "poolclass": StaticPool,
+            "poolclass": StaticPool if _is_in_memory_sqlite(url) else QueuePool,
         }
     return {
         "pool_size": settings.db_pool_size,
@@ -53,6 +77,12 @@ def _enable_sqlite_foreign_keys(dbapi_connection, connection_record) -> None:
         return
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA foreign_keys=ON")
+    if not _is_in_memory_sqlite(settings.database_url):
+        # Readers no longer block on the writer, and a writer that does collide
+        # waits rather than failing the request outright. Neither applies to an
+        # in-memory database, which has exactly one connection.
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute("PRAGMA busy_timeout=5000")
     cursor.close()
 
 

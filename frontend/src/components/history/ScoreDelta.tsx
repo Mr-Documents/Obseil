@@ -7,7 +7,7 @@ import { formatDelta, formatNumber } from '@/utils/format';
 /**
  * A change, shown with its meaning rather than just its sign.
  *
- * "Neutral" metrics — row count, column count — get a plain arrow and neutral
+ * "Neutral" metrics - row count, column count - get a plain arrow and neutral
  * ink. Colouring "more rows" green would tell the reader something untrue.
  */
 const TONE: Record<ComparisonDirection, string> = {
@@ -39,7 +39,7 @@ export function ScoreDelta({
 }) {
   const Icon = ICON[direction];
   const label =
-    delta === null ? '—' : direction === 'unchanged' ? 'no change' : formatDelta(delta, digits);
+    delta === null ? '-' : direction === 'unchanged' ? 'no change' : formatDelta(delta, digits);
 
   return (
     <span
@@ -59,7 +59,7 @@ export function ScoreDelta({
   );
 }
 
-/** "78 → 87" — the two values that produced the delta. */
+/** "78 → 87" - the two values that produced the delta. */
 export function BeforeAfter({
   baseline,
   current,

@@ -11,7 +11,7 @@ import { api, request } from './apiClient';
 /**
  * The API takes repeated query parameters for multi-valued filters
  * (`?severity=high&severity=critical`), which the shared client's flat query
- * map cannot express — so this one endpoint builds its own search string.
+ * map cannot express - so this one endpoint builds its own search string.
  */
 function buildFindingQuery(filters: FindingFilters): string {
   const params = new URLSearchParams();

@@ -6,7 +6,7 @@ import { cn } from '@/utils/cn';
 interface EmptyStateProps {
   icon?: LucideIcon;
   title: string;
-  /** One sentence explaining what the user can do next — never just "No data". */
+  /** One sentence explaining what the user can do next - never just "No data". */
   description?: string;
   action?: ReactNode;
   className?: string;

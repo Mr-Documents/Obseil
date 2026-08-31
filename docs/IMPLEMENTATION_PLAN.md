@@ -1,4 +1,4 @@
-# Obseil — Implementation Plan
+# Obseil - Implementation Plan
 
 > Living document. Records the architecture decisions taken while building the MVP
 > and the phase-by-phase delivery order.
@@ -10,7 +10,7 @@ Obseil answers one question about a dataset: **"Can I trust this?"**
 A user uploads a CSV/XLSX file into a project. Obseil profiles it, runs a suite of
 deterministic quality detectors, runs an unsupervised ML anomaly detector, turns
 everything into *findings*, and rolls the findings up into an explainable
-**0–100 quality score**. Findings can be triaged (reviewed / ignored / false
+**0-100 quality score**. Findings can be triaged (reviewed / ignored / false
 positive), analyses can be compared over time, and a report can be exported.
 
 ## 2. High-level architecture
@@ -46,7 +46,7 @@ analysis results are persisted relationally.
 | Tokens | Short-lived JWT access token + longer-lived refresh token | Persistent auth without long-lived credentials in `localStorage`. |
 | Server state on the client | TanStack Query | Replaces a large amount of hand-written caching/invalidation/retry code. Fewer bugs than a bespoke `useApi`. |
 | Styling | Tailwind CSS v4 (CSS-first config) | No PostCSS config file; design tokens live in one CSS file as custom properties. |
-| PDF | ReportLab | Pure Python — no headless browser or system libraries in the container. |
+| PDF | ReportLab | Pure Python - no headless browser or system libraries in the container. |
 | Anomaly detection | scikit-learn `IsolationForest` | Genuinely useful unsupervised multivariate outlier detection, cheap to train, no labels required, no deep learning justification. |
 | Migrations | Alembic | Required for a real Postgres deployment. |
 
@@ -60,16 +60,16 @@ upload → validate → load (pandas) → profile → quality detectors → ML a
 Every stage is an independently testable pure-ish function operating on a
 `pandas.DataFrame`; nothing about the pipeline knows about HTTP or the ORM.
 
-## 5. Rule-based vs ML — the boundary
+## 5. Rule-based vs ML - the boundary
 
 Deterministic statistics are used wherever the answer is knowable exactly:
 missingness, duplicates, constant columns, cardinality, type violations,
-univariate outliers (IQR / z-score). These are **quality issues** — they are
+univariate outliers (IQR / z-score). These are **quality issues** - they are
 facts about the data.
 
 Isolation Forest is used only for the thing rules cannot do: finding rows that
 are unusual *in combination across several numeric columns*, where no single
-column looks wrong. These are **anomalies** — they are candidates for review,
+column looks wrong. These are **anomalies** - they are candidates for review,
 not facts. The UI and the data model keep the two categories visibly separate.
 
 ## 6. Phases

@@ -1,7 +1,7 @@
 """Supported dataset formats and upload validation.
 
 Adding a format means adding a member here plus a reader in
-``app.data.readers`` — see CONTRIBUTING.md.
+``app.data.readers`` - see CONTRIBUTING.md.
 """
 
 from __future__ import annotations
@@ -59,7 +59,7 @@ def detect_format(filename: str) -> FileFormat:
 def sanitize_display_name(filename: str) -> str:
     """Reduce an uploaded filename to something safe to store and display.
 
-    The result is never used as a path — storage keys are generated — but it is
+    The result is never used as a path - storage keys are generated - but it is
     rendered in the UI and embedded in exported reports, so directory
     components, control characters and unicode tricks are stripped here.
     """
@@ -82,8 +82,8 @@ def sanitize_display_name(filename: str) -> str:
 def validate_magic_bytes(head: bytes, fmt: FileFormat) -> None:
     """Cheap sanity check that the bytes match the claimed format.
 
-    Catches the common cases — a renamed ``.xlsx``, a PDF or an image dropped
-    into the upload zone — before pandas produces a cryptic parser error.
+    Catches the common cases - a renamed ``.xlsx``, a PDF or an image dropped
+    into the upload zone - before pandas produces a cryptic parser error.
     """
     if fmt is FileFormat.XLSX:
         if not head.startswith(_ZIP_MAGIC):

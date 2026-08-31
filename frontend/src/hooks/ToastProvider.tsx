@@ -8,7 +8,7 @@ import { type Toast, type ToastTone, ToastContext } from './toastContext';
 const AUTO_DISMISS_MS: Record<ToastTone, number> = {
   success: 4000,
   info: 5000,
-  // Errors stay until dismissed — they usually require the user to do something.
+  // Errors stay until dismissed - they usually require the user to do something.
   error: 9000,
 };
 

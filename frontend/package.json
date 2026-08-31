@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Obseil — AI-powered data quality intelligence (web client)",
+  "description": "Obseil - AI-powered data quality intelligence (web client)",
   "license": "MIT",
   "scripts": {
     "dev": "vite",

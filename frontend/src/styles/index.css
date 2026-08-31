@@ -63,7 +63,7 @@
 
   /* --- Data visualisation -----------------------------------------------
      A fixed categorical order, never cycled. Hues alternate warm/cool so that
-     *adjacent* slots — the pairs a reader actually has to tell apart — are far
+     *adjacent* slots - the pairs a reader actually has to tell apart - are far
      apart in hue, not merely different.
 
      Verified, not eyeballed: every adjacent pair clears the deuteranopia and
@@ -125,7 +125,7 @@
   --danger: #f4796a;
   --danger-soft: #2a1613;
 
-  /* Dark steps are chosen against the dark surface and validated separately —
+  /* Dark steps are chosen against the dark surface and validated separately -
      not lightened copies of the light ramp. */
   --viz-1: #7280e8;
   --viz-2: #e0703f;
@@ -318,7 +318,7 @@
 }
 
 @layer utilities {
-  /* Skip link — visible only when focused. */
+  /* Skip link - visible only when focused. */
   .skip-link {
     position: absolute;
     left: -9999px;

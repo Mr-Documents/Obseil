@@ -1,6 +1,6 @@
 """Report format registry.
 
-Adding a format — Markdown, HTML, Excel — is a module plus one line here.
+Adding a format - Markdown, HTML, Excel - is a module plus one line here.
 Nothing else in the API needs to change: the endpoint validates the requested
 format against this mapping and returns whatever the exporter produces.
 """

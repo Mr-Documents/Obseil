@@ -14,7 +14,7 @@ const CAPABILITIES = [
   {
     icon: ShieldCheck,
     title: 'Deterministic quality checks',
-    body: 'Missingness, duplicates, invalid values, constant columns and statistical outliers — with the method shown.',
+    body: 'Missingness, duplicates, invalid values, constant columns and statistical outliers - with the method shown.',
   },
   {
     icon: Fingerprint,
@@ -103,7 +103,7 @@ export function LandingPage() {
 
       <footer className="border-t border-border-default">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-8 text-[13px] text-fg-subtle sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <span>Obseil — open-source data quality intelligence.</span>
+          <span>Obseil - open-source data quality intelligence.</span>
           <a
             href="https://github.com/Obseil"
             className="transition-colors hover:text-fg"

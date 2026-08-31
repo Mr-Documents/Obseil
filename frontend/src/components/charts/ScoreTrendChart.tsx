@@ -20,7 +20,7 @@ import { ChartTooltip } from './ChartTooltip';
  * Quality score over time.
  *
  * A line, because the data is a change-over-time series and the shape of the
- * trend is the message. One series, so no legend — the card title names it.
+ * trend is the message. One series, so no legend - the card title names it.
  *
  * The grade bands are drawn as faint background regions rather than as
  * reference lines: they give the reader somewhere to place the line without
@@ -119,9 +119,9 @@ export function ScoreTrendChart({ points }: { points: TrendPoint[] }) {
           {data.map((point) => (
             <tr key={point.analysis_id}>
               <th scope="row">
-                {point.label} — {point.dataset_name}
+                {point.label} - {point.dataset_name}
               </th>
-              <td>{point.score ?? '—'}</td>
+              <td>{point.score ?? '-'}</td>
             </tr>
           ))}
         </tbody>

@@ -17,7 +17,7 @@ env:
 
 jobs:
   backend:
-    name: Backend — lint, types, tests
+    name: Backend - lint, types, tests
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -58,7 +58,7 @@ jobs:
           if-no-files-found: ignore
 
   frontend:
-    name: Frontend — lint, types, tests, build
+    name: Frontend - lint, types, tests, build
     runs-on: ubuntu-latest
     defaults:
       run:

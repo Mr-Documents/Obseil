@@ -94,7 +94,7 @@ class CsvReader(DatasetReader):
         except pd.errors.ParserError as exc:
             raise DatasetError(
                 "The file could not be parsed as CSV. Rows appear to have differing "
-                "numbers of fields — check for unescaped quotes or stray separators.",
+                "numbers of fields - check for unescaped quotes or stray separators.",
                 code="dataset_parse_error",
             ) from exc
         except (ValueError, OSError) as exc:

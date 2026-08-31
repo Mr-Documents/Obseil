@@ -4,7 +4,7 @@ Built with ReportLab's document template rather than a headless browser: no
 system libraries, no Chromium in the container, deterministic output, and it
 runs in a few hundred milliseconds.
 
-The report is written to be **shareable** — the reader may never have seen
+The report is written to be **shareable** - the reader may never have seen
 Obseil. So it states what each number means, names the method behind every
 finding, and says plainly what the anomaly model does and does not know.
 """
@@ -447,7 +447,7 @@ class PdfReportExporter(ReportExporter):
         scope = (
             f"{finding.affected_rows:,} rows ({finding.affected_percentage:.2f}%)"
             if finding.affected_rows is not None and finding.affected_percentage is not None
-            else "—"
+            else "-"
         )
 
         header = Table(

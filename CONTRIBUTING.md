@@ -1,8 +1,8 @@
 # Contributing to Obseil
 
 Thanks for considering a contribution. Obseil is meant to be extended, and the
-codebase is deliberately organised so that the most common contributions — a
-new quality detector, a new anomaly detector, a new file format, a new chart —
+codebase is deliberately organised so that the most common contributions - a
+new quality detector, a new anomaly detector, a new file format, a new chart -
 touch one small area each.
 
 ## Ground rules
@@ -10,7 +10,7 @@ touch one small area each.
 - Be kind. See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 - Open an issue before starting anything large, so we can agree on the approach.
 - Every change ships with tests. CI enforces this.
-- No secrets, credentials, or real customer data in the repository — ever.
+- No secrets, credentials, or real customer data in the repository - ever.
 
 ## Getting set up
 
@@ -102,7 +102,7 @@ produces states what was observed, where, and by which method.
 2. Subclass `AnomalyDetector` and implement `fit_predict(features) -> AnomalyResult`.
 3. Register it in `backend/app/ml/registry.py`.
 4. Add a unit test with a synthetic dataset containing known anomalies.
-5. Explain the method — and its limitations — in `docs/METHODOLOGY.md`.
+5. Explain the method - and its limitations - in `docs/METHODOLOGY.md`.
 
 Do not claim a model knows *why* a row is anomalous. Report the score, the
 features that were used, and the values that stood out.
@@ -119,7 +119,7 @@ features that were used, and the values that stood out.
 - Expand the Playwright suite with a findings-triage journey.
 
 Issues labelled `good first issue` on GitHub always have an acceptance
-criteria section — if one does not, ask and we will add it.
+criteria section - if one does not, ask and we will add it.
 
 ## Reporting bugs and vulnerabilities
 

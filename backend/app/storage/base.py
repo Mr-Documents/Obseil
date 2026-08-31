@@ -4,7 +4,7 @@ Raw datasets never live in PostgreSQL. They are written through a
 :class:`StorageBackend`, which today is the local filesystem and tomorrow could
 be S3 or any object store. Callers only ever see an opaque ``key`` string, so
 adding a backend means implementing this interface and registering it in
-``app.storage.get_storage`` — nothing else in the codebase changes.
+``app.storage.get_storage`` - nothing else in the codebase changes.
 """
 
 from __future__ import annotations

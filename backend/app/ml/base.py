@@ -5,7 +5,7 @@ says *this is wrong*. A detector says *this row is unusual; look at it*. The
 type system keeps the two apart, and so does the documentation the UI shows.
 
 Adding an algorithm means subclassing :class:`AnomalyDetector` and registering
-it in ``app.ml.registry`` — see CONTRIBUTING.md.
+it in ``app.ml.registry`` - see CONTRIBUTING.md.
 """
 
 from __future__ import annotations
@@ -68,7 +68,7 @@ class AnomalyDetector(ABC):
     def detect(self, features: pd.DataFrame) -> AnomalyResult:
         """Score ``features`` and return the rows that stand out.
 
-        ``features`` is already numeric, imputed and free of infinities — see
+        ``features`` is already numeric, imputed and free of infinities - see
         ``app.ml.features``. Detectors do not do their own preparation, so that
         every algorithm is compared on identical inputs.
         """

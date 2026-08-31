@@ -22,7 +22,7 @@ def run_detectors(
     """Run every detector and return their findings, most severe first.
 
     A detector that raises is logged and skipped rather than failing the whole
-    analysis: one broken check — very likely a contributed one — should not
+    analysis: one broken check - very likely a contributed one - should not
     cost the user every other finding in their dataset.
     """
     context = DetectionContext(frame=frame, profile=profile)

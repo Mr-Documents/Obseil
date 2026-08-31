@@ -58,7 +58,7 @@ class TestListing:
     ) -> None:
         """No *deterministic* finding fires on the clean fixture.
 
-        The unsupervised model may still surface a handful of candidates —
+        The unsupervised model may still surface a handful of candidates -
         that is an expected outcome of anomaly detection on any real dataset,
         and it is reported as a separate category rather than as a defect.
         """

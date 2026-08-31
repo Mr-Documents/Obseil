@@ -13,7 +13,7 @@
     "noEmit": true,
     "resolveJsonModule": true,
 
-    /* Strictness — the project treats type errors as build failures. */
+    /* Strictness - the project treats type errors as build failures. */
     "strict": true,
     "noImplicitOverride": true,
     "noUnusedLocals": true,

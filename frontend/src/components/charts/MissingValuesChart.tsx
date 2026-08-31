@@ -22,7 +22,7 @@ const MAX_COLUMNS = 10;
 /**
  * Where values are missing.
  *
- * Only columns that actually have gaps are plotted, worst first — a chart with
+ * Only columns that actually have gaps are plotted, worst first - a chart with
  * forty zero-length bars communicates nothing except that the chart exists.
  *
  * Bars are coloured by the same severity bands the quality engine uses, so a

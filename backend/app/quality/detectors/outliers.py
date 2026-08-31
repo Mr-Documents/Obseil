@@ -1,22 +1,22 @@
 """Univariate outlier detection.
 
-Two classical methods, and the one that was used is always reported — "12
+Two classical methods, and the one that was used is always reported - "12
 outliers" means nothing until you know where the line was drawn.
 
-**IQR (Tukey's fences)** — the primary method. Values outside
+**IQR (Tukey's fences)** - the primary method. Values outside
 ``[Q1 - k·IQR, Q3 + k·IQR]``. Quartiles are rank statistics, so the fences are
 not themselves dragged outwards by the extreme values they exist to find. That
 robustness is why this is the default.
 
-**Z-score** — reported alongside as a cross-check, never as the decision. It
+**Z-score** - reported alongside as a cross-check, never as the decision. It
 assumes roughly normal data, and its mean and standard deviation are *not*
 robust: a handful of extreme values inflates the standard deviation and hides
 the very points being looked for. It is included because it is the method most
 people expect to see, and showing both makes the difference visible.
 
 **Skew correction.** Tukey's fences assume a roughly symmetric distribution.
-Applied directly to a right-skewed column — transaction amounts, durations,
-counts, almost anything money-shaped — they flag several percent of perfectly
+Applied directly to a right-skewed column - transaction amounts, durations,
+counts, almost anything money-shaped - they flag several percent of perfectly
 ordinary values, because the upper fence sits inside a long, legitimate tail.
 For a strongly skewed, non-negative column the fences are therefore computed on
 ``log1p(x)`` and mapped back with ``expm1``. This is the standard remedy, it is
@@ -24,7 +24,7 @@ recorded in the finding's details, and it is the difference between a detector
 people trust and one they learn to ignore.
 
 Neither method claims a value is *wrong*. An outlier is a value far from the
-rest of its column, and may be entirely legitimate — the finding says so.
+rest of its column, and may be entirely legitimate - the finding says so.
 """
 
 from __future__ import annotations
@@ -53,8 +53,8 @@ SKEW_CORRECTION_THRESHOLD = 1.0
 #: distribution a few points sit outside Tukey's fences by construction.
 MIN_OUTLIER_PERCENTAGE = 0.5
 
-#: Above this share the "outliers" *are* the distribution — a heavy tail, not a
-#: defect — and reporting them as a problem would be misleading.
+#: Above this share the "outliers" *are* the distribution - a heavy tail, not a
+#: defect - and reporting them as a problem would be misleading.
 MAX_OUTLIER_PERCENTAGE = 25.0
 
 #: Fewer values than this and quartiles are too unstable to fence with.
@@ -147,7 +147,7 @@ class OutlierDetector(QualityDetector):
             outlier_values = values[outlier_mask].dropna()
             scale_note = (
                 " The column is strongly right-skewed, so the fences were computed on a "
-                "log scale — on the raw scale a long but legitimate tail would be flagged."
+                "log scale - on the raw scale a long but legitimate tail would be flagged."
                 if log_scale
                 else ""
             )

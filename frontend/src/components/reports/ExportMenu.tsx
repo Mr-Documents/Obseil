@@ -13,7 +13,7 @@ const OPTIONS: { format: ReportFormat; label: string; hint: string; icon: typeof
   {
     format: 'pdf',
     label: 'Full report (PDF)',
-    hint: 'Score, statistics, findings and recommendations — shareable as-is.',
+    hint: 'Score, statistics, findings and recommendations - shareable as-is.',
     icon: FileText,
   },
   {
@@ -56,7 +56,7 @@ export function ExportMenu({
       }),
   });
 
-  // Close on Escape or a click outside — the two things a user expects of any
+  // Close on Escape or a click outside - the two things a user expects of any
   // menu, and the two most commonly forgotten.
   useEffect(() => {
     if (!isOpen) return;

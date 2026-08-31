@@ -94,7 +94,7 @@ def anomaly_finding(result: AnomalyResult, row_count: int) -> FindingDraft | Non
         ),
         impact=(
             "Combinations that no single-column rule can see are where silent data problems "
-            "hide — a mis-mapped field, a partially failed load, a test record in production "
+            "hide - a mis-mapped field, a partially failed load, a test record in production "
             "data. They are equally often genuine edge cases, which is why they are reported "
             "for review rather than as defects."
         ),

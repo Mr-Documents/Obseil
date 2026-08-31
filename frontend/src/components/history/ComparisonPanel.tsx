@@ -144,7 +144,7 @@ export function ComparisonPanel({ comparison }: { comparison: AnalysisComparison
       <Card>
         <CardHeader
           title="What changed"
-          description="Each metric is judged against what an improvement means for it — shape changes are reported as neutral."
+          description="Each metric is judged against what an improvement means for it - shape changes are reported as neutral."
         />
         <MetricRows metrics={comparison.metrics} />
       </Card>

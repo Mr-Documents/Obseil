@@ -36,7 +36,7 @@ export class ApiError extends Error {
     this.fields = fields;
   }
 
-  /** True when retrying is pointless — the request itself is wrong. */
+  /** True when retrying is pointless - the request itself is wrong. */
   get isClientError(): boolean {
     return this.status >= 400 && this.status < 500;
   }
@@ -93,7 +93,7 @@ async function toApiError(response: Response): Promise<ApiError> {
       );
     }
   } catch {
-    // Not JSON — fall through to a status-derived message.
+    // Not JSON - fall through to a status-derived message.
   }
   return new ApiError(
     response.status,
@@ -109,10 +109,16 @@ async function toApiError(response: Response): Promise<ApiError> {
 let refreshInFlight: Promise<boolean> | null = null;
 
 async function refreshAccessToken(): Promise<boolean> {
-  const refreshToken = tokenStore.getRefreshToken();
-  if (!refreshToken) return false;
+  if (!tokenStore.getRefreshToken()) return false;
 
   refreshInFlight ??= (async () => {
+    // Read the token here rather than above: refreshing rotates it, so a caller
+    // that queued behind a refresh which has just finished must send the token
+    // that refresh stored. Reading it before the `??=` let a second refresh go
+    // out with a token the server had already retired, which failed and signed
+    // the user out mid-page.
+    const refreshToken = tokenStore.getRefreshToken();
+    if (!refreshToken) return false;
     try {
       const response = await fetch(buildUrl('/auth/refresh'), {
         method: 'POST',

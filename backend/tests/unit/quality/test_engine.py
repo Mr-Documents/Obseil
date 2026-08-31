@@ -34,7 +34,7 @@ class TestEngine:
         assert ranks == sorted(ranks, reverse=True)
 
     def test_a_failing_detector_does_not_lose_the_others(self) -> None:
-        """A broken check — very likely a contributed one — must not cost the
+        """A broken check - very likely a contributed one - must not cost the
         user every other finding in their dataset."""
 
         class Exploding(QualityDetector):

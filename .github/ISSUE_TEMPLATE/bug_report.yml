@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for the report. Please do **not** attach real customer data —
+        Thanks for the report. Please do **not** attach real customer data -
         a small synthetic file that reproduces the problem is far more useful.
 
   - type: textarea

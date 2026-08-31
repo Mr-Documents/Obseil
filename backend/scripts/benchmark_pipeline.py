@@ -2,7 +2,7 @@
 """Measure the analysis pipeline at several dataset sizes.
 
 The numbers in ``docs/PERFORMANCE.md`` come from this script. Re-run it after
-touching the profiling, quality or ML stages — it is how both of the
+touching the profiling, quality or ML stages - it is how both of the
 inefficiencies documented there were found.
 
     cd backend
@@ -51,7 +51,7 @@ def make_frame(rows: int, columns: int, seed: int = 0) -> pd.DataFrame:
     """A dataset shaped like the ones Obseil actually sees.
 
     Half numeric with a realistic right skew, the rest categorical, plus an
-    identifier and a timestamp — the mix that determines which code paths in
+    identifier and a timestamp - the mix that determines which code paths in
     the profiler get exercised.
     """
     rng = np.random.default_rng(seed)

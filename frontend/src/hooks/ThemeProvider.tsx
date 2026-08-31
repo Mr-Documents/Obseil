@@ -8,7 +8,7 @@ function readInitialTheme(): Theme {
     const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
     if (stored === 'light' || stored === 'dark') return stored;
   } catch {
-    // localStorage can throw in private mode — fall through to the OS setting.
+    // localStorage can throw in private mode - fall through to the OS setting.
   }
   return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }

@@ -20,8 +20,8 @@ _HAS_DIGIT = re.compile(r"\d")
 class PasswordMixin(BaseModel):
     """Password policy, applied identically wherever a password is accepted.
 
-    The rules are deliberately modest — length matters far more than symbol
-    classes — but a password with no digit or no letter is rejected because it
+    The rules are deliberately modest - length matters far more than symbol
+    classes - but a password with no digit or no letter is rejected because it
     is almost always a dictionary word or a PIN.
     """
 

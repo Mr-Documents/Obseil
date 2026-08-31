@@ -42,8 +42,8 @@ function Section({
 }
 
 function formatDetailValue(value: unknown): string {
-  if (value === null || value === undefined) return '—';
-  if (Array.isArray(value)) return value.map((entry) => String(entry)).join(', ') || '—';
+  if (value === null || value === undefined) return '-';
+  if (Array.isArray(value)) return value.map((entry) => String(entry)).join(', ') || '-';
   if (typeof value === 'object') return JSON.stringify(value);
   if (typeof value === 'number') return formatNumber(value, 4);
   return String(value);
@@ -72,7 +72,7 @@ export function FindingDetail({
 
   // The dialog holds its own copy so that triaging updates what is on screen
   // immediately. Reading straight from the prop would leave the reviewer
-  // looking at stale state until they closed and reopened the finding — and
+  // looking at stale state until they closed and reopened the finding - and
   // the list behind the dialog may have re-filtered the row away entirely.
   const [current, setCurrent] = useState<Finding | null>(finding);
   useEffect(() => setCurrent(finding), [finding]);

@@ -2,7 +2,7 @@ import { cn } from '@/utils/cn';
 
 /**
  * Loading placeholder. Skeletons mirror the shape of the content they replace
- * so the layout does not jump when data arrives — the single biggest source of
+ * so the layout does not jump when data arrives - the single biggest source of
  * perceived jank in data-heavy dashboards.
  */
 export function Skeleton({ className }: { className?: string }) {

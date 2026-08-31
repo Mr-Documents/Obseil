@@ -3,7 +3,7 @@
  *
  * Kept hand-written rather than generated: the surface is small, and an
  * explicit file documents the contract for readers who never run the API.
- * When a field is added server-side it must be added here too — that is the
+ * When a field is added server-side it must be added here too - that is the
  * point, and TypeScript will tell you where it matters.
  */
 

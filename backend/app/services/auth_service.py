@@ -85,7 +85,7 @@ def authenticate_user(db: Session, *, email: str, password: str) -> User:
     """Verify credentials and return the user, or raise ``AuthenticationError``.
 
     The same message is returned whether the email is unknown or the password
-    is wrong — telling them apart would turn the login form into an account
+    is wrong - telling them apart would turn the login form into an account
     enumeration oracle.
     """
     user = get_user_by_email(db, email)

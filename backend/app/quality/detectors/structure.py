@@ -12,7 +12,7 @@ from app.quality.types import DetectionMethod, FindingDraft, FindingType, Severi
 #: reported by the duplicate-identifier detector instead.
 #:
 #: The window matters. 311 distinct customers across 600 transactions (52%) is
-#: an ordinary foreign key and is *not* flagged — flagging it would put a
+#: an ordinary foreign key and is *not* flagged - flagging it would put a
 #: finding on every clean dataset and teach people to ignore findings. A column
 #: that is 75% distinct with hundreds of values, though, is usually
 #: free-text entry masquerading as a category ("London", "london", "London ").
@@ -93,7 +93,7 @@ class HighCardinalityDetector(QualityDetector):
                     impact=(
                         "Grouping by this column produces almost as many groups as rows, and "
                         "one-hot encoding it would add thousands of near-empty features. High "
-                        "cardinality also often signals inconsistent free-text entry — "
+                        "cardinality also often signals inconsistent free-text entry - "
                         "“London”, “london” and “London ” counted as three categories."
                     ),
                     recommendation=(
@@ -151,7 +151,7 @@ class NumbersAsTextDetector(QualityDetector):
                     title=f"“{column.name}” holds numbers stored as text",
                     description=(
                         f"“{column.name}” is stored as text, but its values parse as numbers"
-                        + (f" — apart from {stragglers:,} that do not." if stragglers else ".")
+                        + (f" - apart from {stragglers:,} that do not." if stragglers else ".")
                     ),
                     impact=(
                         "Text-typed numbers sort as strings (“10” before “9”), cannot be summed "
@@ -167,7 +167,7 @@ class NumbersAsTextDetector(QualityDetector):
                     recommendation=(
                         f"Cast “{column.name}” to a numeric type at the source."
                         + (
-                            " Inspect the values that fail to parse first — they are usually "
+                            " Inspect the values that fail to parse first - they are usually "
                             "placeholder text such as “unknown” or “n/a”."
                             if stragglers
                             else ""

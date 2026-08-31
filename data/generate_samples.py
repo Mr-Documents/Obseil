@@ -187,7 +187,7 @@ def invalid_values_dataset(rng: np.random.Generator) -> pd.DataFrame:
 def anomaly_dataset(rng: np.random.Generator) -> pd.DataFrame:
     """Multivariate anomalies: no single column looks wrong.
 
-    The trick is that the normal data has *structure* — amount is driven by the
+    The trick is that the normal data has *structure* - amount is driven by the
     basket size, and loyalty points accumulate with customer age. Twelve rows
     then violate that structure while keeping every individual value inside its
     own column's ordinary range:
@@ -197,7 +197,7 @@ def anomaly_dataset(rng: np.random.Generator) -> pd.DataFrame:
 
     Every marginal distribution is untouched, so no per-column rule can fire.
     What is unusual is the *combination*, which places these rows in a sparsely
-    populated region of the joint distribution — exactly what an Isolation
+    populated region of the joint distribution - exactly what an Isolation
     Forest is for, and exactly what an interquartile-range check cannot see.
     """
     frame = _base_transactions(rng, 700)

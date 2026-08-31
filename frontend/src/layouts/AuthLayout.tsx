@@ -37,7 +37,7 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
       </main>
 
       <footer className="px-5 py-6 text-center text-xs text-fg-subtle sm:px-8">
-        Obseil — uncover what&rsquo;s hidden in your data.
+        Obseil - uncover what&rsquo;s hidden in your data.
       </footer>
     </div>
   );

@@ -13,8 +13,8 @@ import { formatNumber, formatPercent } from '@/utils/format';
  * The headline figure.
  *
  * A single number is not a chart: there is nothing to compare it against
- * within itself, so it gets the hero-number treatment — very large, one
- * qualitative label, one sentence of meaning — rather than a gauge with a
+ * within itself, so it gets the hero-number treatment - very large, one
+ * qualitative label, one sentence of meaning - rather than a gauge with a
  * needle, which spends a lot of pixels encoding one value badly.
  *
  * The meter beneath it is the only graphical element, and it exists to place
@@ -110,7 +110,7 @@ function DimensionBar({
         </span>
       </div>
       {/* Bar length always means "points lost", so a clear dimension is an
-          empty track rather than a full green one — two encodings in the same
+          empty track rather than a full green one - two encodings in the same
           chart would be worse than none. */}
       <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-surface-muted">
         {penalty > 0 && (

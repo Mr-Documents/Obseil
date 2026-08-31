@@ -18,10 +18,10 @@ describe('formatNumber', () => {
   });
 
   it('renders an em dash for missing or non-finite values', () => {
-    expect(formatNumber(null)).toBe('—');
-    expect(formatNumber(undefined)).toBe('—');
-    expect(formatNumber(Number.NaN)).toBe('—');
-    expect(formatNumber(Number.POSITIVE_INFINITY)).toBe('—');
+    expect(formatNumber(null)).toBe('-');
+    expect(formatNumber(undefined)).toBe('-');
+    expect(formatNumber(Number.NaN)).toBe('-');
+    expect(formatNumber(Number.POSITIVE_INFINITY)).toBe('-');
   });
 });
 
@@ -70,7 +70,7 @@ describe('formatStatistic', () => {
   });
 
   it('returns an em dash for null', () => {
-    expect(formatStatistic(null)).toBe('—');
+    expect(formatStatistic(null)).toBe('-');
   });
 });
 
@@ -88,7 +88,7 @@ describe('formatDate', () => {
   });
 
   it('rejects unparseable input rather than rendering "Invalid Date"', () => {
-    expect(formatDate('not-a-date')).toBe('—');
+    expect(formatDate('not-a-date')).toBe('-');
   });
 });
 

@@ -14,7 +14,7 @@ interface LocationState {
  * Route guard for the authenticated area.
  *
  * While the stored token is being verified it renders a calm splash rather
- * than bouncing the user to the login screen and back — a redirect flash on
+ * than bouncing the user to the login screen and back - a redirect flash on
  * every reload is the most common way SPA auth feels broken.
  */
 export function RequireAuth({ children }: { children: ReactNode }) {
@@ -42,8 +42,8 @@ export function RequireAuth({ children }: { children: ReactNode }) {
  * Inverse guard: keeps a signed-in user off the login and register screens.
  *
  * It honours the same `state.from` that `RequireAuth` sets. This guard runs
- * the moment the session becomes authenticated — before the login page's own
- * `navigate` can — so without reading `from` here it would race the deep-link
+ * the moment the session becomes authenticated - before the login page's own
+ * `navigate` can - so without reading `from` here it would race the deep-link
  * redirect and always win, dumping the user on the projects list instead of
  * the page they originally asked for.
  */

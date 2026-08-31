@@ -43,7 +43,7 @@ export class ErrorBoundary extends Component<Props, State> {
         <div>
           <h1 className="text-xl font-semibold tracking-[-0.02em] text-fg">Something went wrong</h1>
           <p className="mt-2 max-w-md text-sm leading-relaxed text-fg-muted">
-            Obseil hit an unexpected error while rendering this page. Your data is safe — try again,
+            Obseil hit an unexpected error while rendering this page. Your data is safe - try again,
             and if it keeps happening please open an issue.
           </p>
         </div>

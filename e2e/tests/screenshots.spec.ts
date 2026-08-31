@@ -8,7 +8,7 @@ import { createProject, register, samplePath, uploadDataset } from './helpers';
 /**
  * Captures the product's main screens for design review.
  *
- * Not an assertion suite — it exists so a person can look at every screen in
+ * Not an assertion suite - it exists so a person can look at every screen in
  * both themes without clicking through the app by hand. Run it deliberately:
  *
  *     OBSEIL_CAPTURE=1 npx playwright test screenshots --project=chromium

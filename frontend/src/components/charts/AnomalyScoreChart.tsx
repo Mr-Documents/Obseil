@@ -86,7 +86,7 @@ export function AnomalyScoreChart({ anomalies }: { anomalies: Anomaly[] }) {
                 formatValue={(value) => `${formatNumber(value)} row${value === 1 ? '' : 's'}`}
                 renderDetail={(entry) => {
                   const row = entry.payload as { lower?: number; upper?: number } | undefined;
-                  return row ? `Score ${row.lower}–${row.upper}` : null;
+                  return row ? `Score ${row.lower}-${row.upper}` : null;
                 }}
               />
             }
@@ -116,7 +116,7 @@ export function AnomalyScoreChart({ anomalies }: { anomalies: Anomaly[] }) {
           {buckets.map((bucket) => (
             <tr key={bucket.lower}>
               <th scope="row">
-                {bucket.lower}–{bucket.upper}
+                {bucket.lower}-{bucket.upper}
               </th>
               <td>{bucket.count}</td>
             </tr>

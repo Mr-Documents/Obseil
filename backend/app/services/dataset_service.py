@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 def get_owned_dataset(db: Session, *, dataset_id: str, user: User) -> Dataset:
     """Fetch a dataset the user owns, via its project.
 
-    Like ``get_owned_project``, a dataset belonging to someone else is a 404 —
+    Like ``get_owned_project``, a dataset belonging to someone else is a 404 -
     the caller learns nothing about ids they have no right to.
     """
     dataset = db.scalar(

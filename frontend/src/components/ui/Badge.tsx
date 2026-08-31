@@ -19,7 +19,7 @@ const TONES: Record<BadgeTone, string> = {
 interface BadgeProps {
   children: ReactNode;
   tone?: BadgeTone;
-  /** Adds a small filled dot — useful for severity and status pills. */
+  /** Adds a small filled dot - useful for severity and status pills. */
   dot?: boolean;
   className?: string;
   size?: 'sm' | 'md';

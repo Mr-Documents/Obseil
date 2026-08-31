@@ -65,7 +65,7 @@ export function UploadDialog({ projectId, open, onClose, onUploaded }: UploadDia
       notify({
         tone: 'success',
         title: `“${dataset.name}” analysed.`,
-        description: `${dataset.row_count?.toLocaleString() ?? '—'} rows, ${dataset.column_count ?? '—'} columns.`,
+        description: `${dataset.row_count?.toLocaleString() ?? '-'} rows, ${dataset.column_count ?? '-'} columns.`,
       });
       onUploaded?.(dataset);
       reset();

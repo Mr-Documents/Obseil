@@ -2,7 +2,7 @@
 
 **Why this algorithm.** Isolation Forest builds random trees that split on a
 randomly chosen feature at a randomly chosen threshold. Points that are easy to
-separate from the rest — those that end up in short branches — are unusual. It
+separate from the rest - those that end up in short branches - are unusual. It
 needs no labels, no distance metric and no assumption of normality, and it
 scales linearly. For "find rows that look odd across several numeric columns"
 it is the right amount of machine learning: enough to see combinations that no
@@ -10,7 +10,7 @@ per-column rule can, not so much that the result stops being explainable.
 
 **What it does not do.** It does not know *why* a row is unusual, and Obseil
 does not claim it does. A finding reports the score, the features the model
-saw, and which of that row's values sit furthest from their column's centre —
+saw, and which of that row's values sit furthest from their column's centre -
 all descriptive statements about the data, none an attribution of the model's
 internal decision.
 
@@ -20,11 +20,11 @@ and the part most implementations get wrong.
 scikit-learn's ``contamination="auto"`` sets a fixed score offset from the
 original paper. On data with no strong anomaly structure the scores cluster
 tightly around that offset, and it labels *roughly half the dataset* anomalous
-— which is worse than useless, because it destroys trust in every other number
+- which is worse than useless, because it destroys trust in every other number
 on the page. (Measured on Obseil's own clean fixture: 49% flagged.)
 
-So the forest is used for what it is genuinely good at — **ranking** rows by
-how easily they isolate — and the threshold is set from the resulting score
+So the forest is used for what it is genuinely good at - **ranking** rows by
+how easily they isolate - and the threshold is set from the resulting score
 distribution using the Iglewicz-Hoaglin modified z-score: flag scores more than
 3.5 MAD-based deviations above the median. Median and MAD are used rather than
 mean and standard deviation for the same reason as everywhere else in Obseil:
@@ -38,7 +38,7 @@ and scikit-learn's own thresholding is used instead.
 **No threshold here is objectively correct.** Unsupervised anomaly detection
 has no ground truth to calibrate against; every cut-off trades false positives
 against misses. What Obseil commits to is that the rule is standard, stated,
-and reproducible — and that a handful of candidates on an otherwise clean
+and reproducible - and that a handful of candidates on an otherwise clean
 dataset is an expected outcome, not a bug. The finding says so.
 """
 
@@ -232,7 +232,7 @@ def _rescale(raw_scores: np.ndarray) -> np.ndarray:
     """Map raw scores onto 0-100 within this dataset.
 
     Min-max, deliberately. The result is a *relative* ranking within one
-    dataset and is not comparable across datasets — which the API and the UI
+    dataset and is not comparable across datasets - which the API and the UI
     both say, because a 0-100 number that looked absolute would be read as one.
     """
     lowest, highest = float(raw_scores.min()), float(raw_scores.max())
@@ -255,7 +255,7 @@ def _contributors(
     and inventing one would misrepresent the model.
     """
     # `deviations` holds only the flagged rows, but keeps their original
-    # labels — which equal their positions, because the prepared feature frame
+    # labels - which equal their positions, because the prepared feature frame
     # is reindexed from zero. So this is a label lookup, not a positional one.
     row = deviations.loc[position]
     ranked = row.sort_values(ascending=False).head(TOP_CONTRIBUTORS)

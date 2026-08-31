@@ -32,7 +32,7 @@ const LABELS: Record<Severity, string> = {
  * The order is fixed by severity, never sorted by value, so the shape of the
  * chart is comparable between datasets at a glance.
  *
- * Severity uses the reserved status palette rather than the categorical ramp —
+ * Severity uses the reserved status palette rather than the categorical ramp -
  * these are states, not series, and "critical" must look the same everywhere
  * in the product.
  */
@@ -84,7 +84,7 @@ export function SeverityBreakdownChart({ counts }: { counts: Record<string, numb
             {data.map((entry) => (
               <Cell key={entry.severity} fill={SEVERITY_COLORS[entry.severity]} />
             ))}
-            {/* Four categories, so every bar is directly labelled — no legend
+            {/* Four categories, so every bar is directly labelled - no legend
                 needed and no hover required to read a value. */}
             <LabelList
               dataKey="count"

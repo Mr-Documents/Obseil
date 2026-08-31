@@ -3,8 +3,8 @@
 Adding a detector is two lines: import it and add it to ``DETECTORS``. The
 engine iterates this list, so nothing else needs to know the new check exists.
 
-Order is presentational only — findings are sorted by severity before they are
-returned — but keeping related checks adjacent makes the list readable.
+Order is presentational only - findings are sorted by severity before they are
+returned - but keeping related checks adjacent makes the list readable.
 """
 
 from __future__ import annotations

@@ -72,7 +72,7 @@ class Finding(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     )
 
     type: Mapped[str] = mapped_column(String(48), nullable=False, index=True)
-    #: "rule" or "anomaly" — kept as a column so the UI can separate
+    #: "rule" or "anomaly" - kept as a column so the UI can separate
     #: deterministic facts from model suggestions without parsing the type.
     category: Mapped[str] = mapped_column(String(16), nullable=False, default="rule", index=True)
     severity: Mapped[str] = mapped_column(String(16), nullable=False, index=True)
@@ -117,7 +117,7 @@ class FindingFeedback(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
     The unique constraint is on ``finding_id`` alone: in the current
     single-owner model a finding has exactly one reviewer. When projects gain
-    members this becomes ``(finding_id, user_id)`` — one migration, no change
+    members this becomes ``(finding_id, user_id)`` - one migration, no change
     to the surrounding code.
     """
 

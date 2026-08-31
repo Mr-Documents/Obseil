@@ -146,7 +146,7 @@ export function ProjectHistoryPage() {
                           </Link>
                         </TD>
                         <TD numeric className={cn('font-medium', scoreTone(run.quality_score))}>
-                          {run.quality_score === null ? '—' : formatNumber(run.quality_score, 1)}
+                          {run.quality_score === null ? '-' : formatNumber(run.quality_score, 1)}
                         </TD>
                         <TD numeric>{formatNumber(run.finding_count)}</TD>
                         <TD numeric>{formatNumber(run.anomaly_count)}</TD>

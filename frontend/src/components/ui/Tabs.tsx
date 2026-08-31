@@ -22,7 +22,7 @@ const FADE = 'pointer-events-none absolute inset-y-0 w-8 transition-opacity dura
  * screens the strip scrolls horizontally inside itself rather than wrapping.
  *
  * Horizontal scrolling on its own is a trap: at a phone width the last tab sits
- * entirely off-screen with nothing to suggest it exists. Two things fix that —
+ * entirely off-screen with nothing to suggest it exists. Two things fix that -
  * a fade on whichever edge still has content behind it, and scrolling the
  * active tab into view so a deep link never opens on a strip that looks like it
  * is showing a different page.

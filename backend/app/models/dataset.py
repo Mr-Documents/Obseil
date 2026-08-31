@@ -130,7 +130,7 @@ class DatasetAnalysis(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     score_breakdown: Mapped[dict[str, Any] | None] = mapped_column(JSONColumn, nullable=True)
 
     #: Anomaly detection outcome. `ml_skipped_reason` is set when detection was
-    #: deliberately not run — a normal outcome, not a failure.
+    #: deliberately not run - a normal outcome, not a failure.
     anomaly_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     anomaly_rate: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     ml_algorithm: Mapped[str | None] = mapped_column(String(48), nullable=True)

@@ -100,7 +100,16 @@ export function DatasetOverviewPage() {
 
   return (
     <div className="space-y-6">
-      {score.data && <QualityScoreCard score={score.data} />}
+      {score.data ? (
+        <QualityScoreCard score={score.data} />
+      ) : (
+        // The score is the whole point of the page. If its request failed, say
+        // so - rendering the rest of the dashboard without it looks like a
+        // dataset that was never scored.
+        <Alert tone="danger" title="Could not load the quality score">
+          {score.error instanceof ApiError ? score.error.message : 'Please try again in a moment.'}
+        </Alert>
+      )}
 
       {stats.notes.length > 0 && (
         <Alert tone="info" title="How this file was read">

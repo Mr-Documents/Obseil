@@ -6,7 +6,7 @@ import { formatPercent } from '@/utils/format';
  *
  * The colour follows the same severity bands the quality engine uses, so a bar
  * that looks alarming in the explorer corresponds to a finding that is actually
- * severe — the visual and the data never disagree.
+ * severe - the visual and the data never disagree.
  */
 export function MissingBar({ percentage, className }: { percentage: number; className?: string }) {
   const tone =

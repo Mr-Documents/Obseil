@@ -58,7 +58,7 @@ class LocalFileStorage(StorageBackend):
             self._resolve(key).unlink(missing_ok=True)
         except OSError:
             # A file we cannot delete is a housekeeping problem, not a request
-            # failure — the database row is what the user actually sees.
+            # failure - the database row is what the user actually sees.
             logger.warning("Could not delete stored object %s", key, exc_info=True)
 
     def exists(self, key: str) -> bool:

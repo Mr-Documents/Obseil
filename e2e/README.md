@@ -21,7 +21,7 @@ needs no orchestration script.
 
 ### What it needs
 
-The backend environment must be on `PATH` — an activated virtualenv, or CI's
+The backend environment must be on `PATH` - an activated virtualenv, or CI's
 installed dependencies. This is the same requirement as running `pytest`:
 
 ```bash
@@ -37,7 +37,7 @@ against a real PostgreSQL service in a separate CI job, so proving the user
 journey works does not need a database service.
 
 Delete `backend/var/e2e.db` for a clean slate. Tests do not depend on it being
-empty — each one registers its own account.
+empty - each one registers its own account.
 
 ### One gotcha
 
@@ -53,7 +53,7 @@ starts fresh.
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | `journey.spec.ts`         | The acceptance journey: register → project → upload → score → findings → triage → anomalies → rows → columns → export                 |
 | `auth-and-errors.spec.ts` | Sign-in failures, deep-link redirects, session persistence, upload rejections, cross-account access, 404s, and the clean-dataset path |
-| `screenshots.spec.ts`     | Not assertions — captures every screen in both themes for design review. Skipped unless `OBSEIL_CAPTURE=1`.                           |
+| `screenshots.spec.ts`     | Not assertions - captures every screen in both themes for design review. Skipped unless `OBSEIL_CAPTURE=1`.                           |
 
 ### Capturing screens for design review
 
@@ -61,7 +61,7 @@ starts fresh.
 OBSEIL_CAPTURE=1 npx playwright test screenshots
 ```
 
-Writes `screenshots/{desktop,mobile}-NN-name.png` — every screen, both themes,
+Writes `screenshots/{desktop,mobile}-NN-name.png` - every screen, both themes,
 both breakpoints. The directory is git-ignored; the copies used by the root
 README live in `docs/screenshots/`. Reviewing these is how the invisible
 sub-1% bars in the missing-values chart and the clipped tab strip were found.
@@ -72,13 +72,13 @@ review. The desktop run additionally asserts the page never scrolls sideways.
 
 ## Writing a test
 
-Use `tests/helpers.ts` — it has `register`, `signIn`, `createProject` and
+Use `tests/helpers.ts` - it has `register`, `signIn`, `createProject` and
 `uploadDataset`, each of which waits on a real signal (a URL change, a dialog
 closing) rather than a timeout.
 
 Two rules that keep these tests honest:
 
-1. **Query the way a user perceives the page** — by role and accessible name.
+1. **Query the way a user perceives the page** - by role and accessible name.
    If a locator is hard to write, that is usually a real accessibility gap.
 2. **Never wait on a fixed delay.** Every helper waits for an assertion.
    Analysis runs inline and takes a few seconds, so the upload helper waits on
@@ -92,7 +92,7 @@ Playwright keeps a trace, a screenshot and a video for every failure:
 npx playwright show-trace test-results/<test-name>/trace.zip
 ```
 
-The trace is a time-travelling DOM snapshot — usually faster than re-running.
+The trace is a time-travelling DOM snapshot - usually faster than re-running.
 
 Two real bugs in Obseil were found this way, not by the unit tests:
 

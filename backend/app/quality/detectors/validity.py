@@ -1,12 +1,12 @@
 """Validity detectors: values that are the wrong *kind* of thing.
 
 Distinct from the outlier detector, which finds values that are merely far from
-the rest. A negative item count is not unusual — it is impossible.
+the rest. A negative item count is not unusual - it is impossible.
 
 The hard part is doing this **without inventing domain rules**. Obseil does not
 know what your columns mean, so it never asserts a business rule it cannot
 justify from the data in front of it. Each detector below states the evidence
-it used, and the finding can be marked a false positive — which is exactly what
+it used, and the finding can be marked a false positive - which is exactly what
 the feedback store is for.
 """
 
@@ -65,7 +65,7 @@ class NegativeValueDetector(QualityDetector):
     1. Negatives are a *small minority* (< 5%). A column that is 40% negative
        has a legitimate negative range.
     2. Either the column name denotes a quantity that cannot be negative, or
-       the column is integer-valued — counts far more often than measurements.
+       the column is integer-valued - counts far more often than measurements.
 
     Requiring both keeps a profit-and-loss column from being flagged just
     because it is mostly positive.

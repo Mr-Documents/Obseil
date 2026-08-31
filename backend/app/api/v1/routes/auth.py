@@ -27,7 +27,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
     responses={409: {"description": "Email already registered"}},
 )
 def register(payload: RegisterRequest, db: DbSession) -> AuthResponse:
-    """Register and sign in immediately — one step, not two."""
+    """Register and sign in immediately - one step, not two."""
     user = auth_service.register_user(
         db,
         email=payload.email,

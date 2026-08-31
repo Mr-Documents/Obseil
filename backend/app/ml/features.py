@@ -9,7 +9,7 @@ fitting the Isolation Forest. The algorithm splits one feature at a time at a
 threshold drawn uniformly from that feature's observed range, so it is
 invariant to per-feature affine rescaling: standardising would add a step that
 changes nothing while implying it matters. This is not true of distance-based
-detectors — a Local Outlier Factor or DBSCAN detector added later **must**
+detectors - a Local Outlier Factor or DBSCAN detector added later **must**
 scale, and :func:`scale_features` is provided for exactly that.
 """
 
@@ -66,7 +66,7 @@ def prepare_features(frame: pd.DataFrame, profile: DatasetProfile) -> FeatureMat
 
     Steps, in order:
 
-    1. Select numeric features — including text columns that hold numbers —
+    1. Select numeric features - including text columns that hold numbers -
        while excluding constants (no signal) and integer surrogate keys (a row
        is not anomalous for having a high id).
     2. Drop features that are mostly missing.
@@ -95,7 +95,7 @@ def prepare_features(frame: pd.DataFrame, profile: DatasetProfile) -> FeatureMat
             dropped_columns=dropped,
             skip_reason=(
                 f"Only {len(kept)} usable numeric column"
-                f"{'' if len(kept) == 1 else 's'} — multivariate anomaly detection needs at "
+                f"{'' if len(kept) == 1 else 's'} - multivariate anomaly detection needs at "
                 f"least {MIN_FEATURES}. Single-column outliers are already covered by the "
                 "interquartile-range check."
             ),
@@ -138,7 +138,7 @@ def prepare_features(frame: pd.DataFrame, profile: DatasetProfile) -> FeatureMat
             dropped_columns=dropped,
             imputed_columns=imputed,
             skip_reason=(
-                f"Only {len(prepared):,} rows — anomaly detection needs at least {MIN_ROWS} "
+                f"Only {len(prepared):,} rows - anomaly detection needs at least {MIN_ROWS} "
                 "before 'unusual' means anything."
             ),
         )
@@ -163,7 +163,7 @@ def prepare_features(frame: pd.DataFrame, profile: DatasetProfile) -> FeatureMat
 def scale_features(features: pd.DataFrame) -> pd.DataFrame:
     """Robustly scale features to a comparable range.
 
-    Not used by the Isolation Forest — see this module's docstring — but
+    Not used by the Isolation Forest - see this module's docstring - but
     required by any distance-based detector added later. Median and IQR are
     used rather than mean and standard deviation because the latter are pulled
     by the outliers the detector exists to find.

@@ -105,7 +105,7 @@ export function DatasetRowsPage() {
 
       <CardBody className="flex flex-wrap items-center justify-between gap-3 border-t border-border-default px-4 py-3">
         <p className="tabular text-[13px] text-fg-muted" aria-live="polite">
-          {formatNumber(start)}–{formatNumber(end)} of {formatNumber(data.total_rows)} rows
+          {formatNumber(start)}-{formatNumber(end)} of {formatNumber(data.total_rows)} rows
         </p>
         <div className="flex gap-2">
           <Button

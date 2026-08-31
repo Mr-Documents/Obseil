@@ -27,7 +27,7 @@ class ExcelReader(DatasetReader):
         except ValueError as exc:
             raise DatasetError(
                 "The workbook could not be opened. Only .xlsx and .xlsm files are supported "
-                "— re-save an older .xls file in the newer format.",
+                "- re-save an older .xls file in the newer format.",
                 code="dataset_parse_error",
             ) from exc
         except Exception as exc:  # openpyxl raises a wide variety of types

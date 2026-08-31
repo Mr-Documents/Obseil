@@ -65,7 +65,7 @@ export const reportsApi = {
     );
 
     // Object URLs must be revoked or the blob is retained for the life of the
-    // document — a few megabytes per export adds up over a session.
+    // document - a few megabytes per export adds up over a session.
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;

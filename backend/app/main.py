@@ -29,7 +29,7 @@ from app.core.logging import configure_logging, request_id_ctx
 logger = logging.getLogger("obseil")
 
 DESCRIPTION = """
-**Obseil** — AI-powered data quality intelligence.
+**Obseil** - AI-powered data quality intelligence.
 
 Upload a dataset, and Obseil profiles it, runs deterministic quality detectors,
 runs unsupervised anomaly detection, and produces an explainable 0-100 quality

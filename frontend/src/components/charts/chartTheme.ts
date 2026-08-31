@@ -20,7 +20,7 @@ export const VIZ_SERIES = [
   'var(--viz-6)',
 ] as const;
 
-/** Status colours are reserved — never reused as "series 5". */
+/** Status colours are reserved - never reused as "series 5". */
 export const SEVERITY_COLORS = {
   critical: 'var(--critical)',
   high: 'var(--high)',

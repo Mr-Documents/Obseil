@@ -88,7 +88,7 @@ def looks_boolean(series: pd.Series) -> bool:
     tokens = set(values.astype(str).str.strip().str.lower().unique())
     if not tokens or not tokens.issubset(BOOLEAN_TOKENS):
         return False
-    # "0"/"1" alone is ambiguous — that is a numeric flag, and calling it
+    # "0"/"1" alone is ambiguous - that is a numeric flag, and calling it
     # boolean would suppress genuinely useful numeric statistics.
     return not tokens.issubset({"0", "1"})
 

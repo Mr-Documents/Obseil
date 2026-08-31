@@ -24,8 +24,8 @@ logger = logging.getLogger(__name__)
 _UNNAMED = "Unnamed:"
 
 #: pandas silently disambiguates repeated headers by appending ``.1``, ``.2``.
-#: We rewrite those to ``_1`` for consistency with our own suffixing, and — more
-#: importantly — surface them, because a user whose export has two "amount"
+#: We rewrite those to ``_1`` for consistency with our own suffixing, and - more
+#: importantly - surface them, because a user whose export has two "amount"
 #: columns needs to be told rather than left to wonder which one they are
 #: reading. Only rewritten when the base name is genuinely present, so a real
 #: column called "v1.2" is left alone.

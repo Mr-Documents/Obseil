@@ -126,9 +126,16 @@ test.describe('errors the user can actually hit', () => {
     // Blocking the intruder is only half the guarantee. A scoping bug that hid
     // the project from everyone would pass the assertions above, so prove the
     // owner still reaches the very same URL.
+    //
+    // Signing out is asynchronous (it calls the API before clearing state), and
+    // the redirect it triggers remembers the page the intruder was on. Wait for
+    // it to settle, or the sign-in below races it and lands somewhere else.
     await page.getByRole('button', { name: /sign out/i }).click();
-    await signIn(page, owner);
-    await page.goto(projectUrl as string);
+    await expect(page).toHaveURL(/\/login/);
+
+    // The owner is returned to the deep link they were bounced from - and,
+    // unlike the intruder, they can actually see what is behind it.
+    await signIn(page, owner, new RegExp(`${projectUrl}$`));
     await expect(page.getByRole('heading', { name: /private project/i })).toBeVisible();
   });
 

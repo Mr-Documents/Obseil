@@ -35,7 +35,7 @@ export interface ButtonStyleOptions {
  * Button styling as a plain class string.
  *
  * Router `<Link>`s that should *look* like buttons use this instead of being
- * nested inside a `<button>` — nesting an anchor in a button is invalid HTML
+ * nested inside a `<button>` - nesting an anchor in a button is invalid HTML
  * and breaks keyboard activation.
  */
 export function buttonStyles({

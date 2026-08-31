@@ -39,7 +39,7 @@ class AnomalyOverview(BaseModel):
 
     analysis_id: str
     ran: bool
-    #: Present when detection was deliberately skipped — a normal outcome.
+    #: Present when detection was deliberately skipped - a normal outcome.
     skipped_reason: str | None = None
     algorithm: str | None = None
     features: list[str] = Field(default_factory=list)

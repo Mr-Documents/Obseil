@@ -197,7 +197,7 @@ export function DatasetAnomaliesPage() {
 
             <CardBody className="flex flex-wrap items-center justify-between gap-3 border-t border-border-default px-4 py-3">
               <p className="tabular text-[13px] text-fg-muted" aria-live="polite">
-                {formatNumber(offset + 1)}–{formatNumber(offset + data.items.length)} of{' '}
+                {formatNumber(offset + 1)}-{formatNumber(offset + data.items.length)} of{' '}
                 {formatNumber(total)}
               </p>
               <div className="flex gap-2">

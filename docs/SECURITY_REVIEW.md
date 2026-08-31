@@ -14,13 +14,13 @@ becoming an incident.
 Obseil is a multi-tenant web application where each user uploads files that are
 parsed by the server. The realistic threats, in order of likelihood:
 
-1. **Cross-tenant data access** — one account reading another's projects,
+1. **Cross-tenant data access** - one account reading another's projects,
    datasets, findings or reports. The highest-value target, and the easiest to
    get wrong.
-2. **Malicious uploads** — path traversal via filename, resource exhaustion via
+2. **Malicious uploads** - path traversal via filename, resource exhaustion via
    size, or a parser exploited by crafted content.
-3. **Credential attacks** — brute force, account enumeration, token forgery.
-4. **Information disclosure** — stack traces, secrets in logs, internal paths.
+3. **Credential attacks** - brute force, account enumeration, token forgery.
+4. **Information disclosure** - stack traces, secrets in logs, internal paths.
 
 Out of scope for the MVP: a compromised host, a compromised database, and
 denial of service beyond the configured upload limit. Stated in
@@ -75,14 +75,14 @@ every use, limiting the window in which a stolen refresh token is useful.
 the origin can read them. This is the standard trade-off for a token-based SPA.
 It is mitigated by short-lived access tokens (30 minutes by default) and by
 shipping no third-party scripts. Moving to httpOnly cookies means changing
-`services/tokenStore.ts` and the API's auth dependency — nothing else.
+`services/tokenStore.ts` and the API's auth dependency - nothing else.
 
 ---
 
 ## 3. Authorisation
 
-Every resource-scoped read and write funnels through one of three helpers —
-`get_owned_project`, `get_owned_dataset`, `get_owned_analysis` — each of which
+Every resource-scoped read and write funnels through one of three helpers -
+`get_owned_project`, `get_owned_dataset`, `get_owned_analysis` - each of which
 joins to `projects.owner_id`. There is no code path that loads one of these
 objects by id without that join.
 
@@ -112,7 +112,7 @@ This is the largest attack surface: the server parses files supplied by users.
 | Content is checked against the claimed format | `data/formats.py` | `test_rejects_a_csv_that_is_really_a_workbook` |
 
 **Path traversal is removed from the threat model rather than sanitised away.**
-The storage key is `projects/{uuid}/{uuid}.{ext}` — derived entirely from
+The storage key is `projects/{uuid}/{uuid}.{ext}` - derived entirely from
 server-side values. The user's filename never influences where bytes land; it
 is kept only as a display string. The filesystem backend then independently
 refuses any key that does not match a strict pattern or that resolves outside
@@ -123,7 +123,7 @@ oversized upload never reaches permanent storage and a rejected one leaves no
 orphan. An orphaned blob is also cleaned up if the database row cannot be
 written.
 
-**Operators should also enforce a body limit at the reverse proxy** — the
+**Operators should also enforce a body limit at the reverse proxy** - the
 application limit protects storage, not the socket. Noted in
 [SECURITY.md](../SECURITY.md).
 
@@ -132,7 +132,7 @@ application limit protects storage, not the socket. Noted in
 pandas and openpyxl parse user-controlled content. Both are widely deployed and
 actively maintained; the mitigation is dependency currency (Dependabot, weekly)
 rather than sandboxing, which would be disproportionate for the MVP. Excel
-formulas are never evaluated — `openpyxl` reads values, and Obseil never writes
+formulas are never evaluated - `openpyxl` reads values, and Obseil never writes
 a spreadsheet, so CSV-injection into an export is not applicable to the CSV
 findings export either (it contains no user-controlled leading `=`, `+`, `-`,
 `@` in a formula position because every field is quoted by `csv.DictWriter`).
@@ -146,7 +146,7 @@ in the codebase. `test_a_sql_payload_in_a_filter_is_treated_as_data` submits
 `'; DROP TABLE projects; --` through the findings search filter and asserts the
 table survives.
 
-The API stores and returns text as text — it is not an HTML renderer, and
+The API stores and returns text as text - it is not an HTML renderer, and
 escaping is React's job at the point of rendering.
 `test_a_script_payload_in_a_project_name_is_stored_verbatim` documents that
 decision so nobody "fixes" it by escaping in the wrong layer.
@@ -157,11 +157,11 @@ decision so nobody "fixes" it by escaping in the wrong layer.
 
 Every failure path returns the same envelope, with a `request_id` the user can
 quote. Unhandled exceptions log a full traceback server-side and return a
-generic `internal_error` — `test_an_unexpected_error_never_returns_a_traceback`
+generic `internal_error` - `test_an_unexpected_error_never_returns_a_traceback`
 raises an exception containing `/etc/shadow` and asserts none of it reaches the
 client.
 
-Validation errors report the offending field, never the submitted value —
+Validation errors report the offending field, never the submitted value -
 `test_validation_errors_do_not_echo_the_submitted_password`.
 
 In `production`, the interactive API documentation and the OpenAPI schema are
@@ -188,7 +188,7 @@ dev-only.
 `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` and
 `Referrer-Policy: no-referrer` are set on every API response and by the nginx
 config that serves the built frontend. CORS is restricted to the origins in
-`OBSEIL_CORS_ORIGINS`, with no wildcard —
+`OBSEIL_CORS_ORIGINS`, with no wildcard -
 `test_cors_is_restricted_to_configured_origins` asserts an unlisted origin is
 not echoed back.
 

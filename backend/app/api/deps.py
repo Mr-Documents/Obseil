@@ -2,7 +2,7 @@
 
 These are the only place the API layer learns *who* is calling and *what* they
 are allowed to touch. Route handlers declare the dependency and get either a
-valid object or an error response — they never write an authorisation check
+valid object or an error response - they never write an authorisation check
 inline.
 """
 

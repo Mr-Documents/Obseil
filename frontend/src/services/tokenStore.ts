@@ -6,7 +6,7 @@
  * the origin, so the mitigation is to keep access tokens short lived (30
  * minutes by default) and to ship no third-party scripts. Moving to
  * httpOnly cookies later means changing this module and the API's auth
- * dependency — nothing else.
+ * dependency - nothing else.
  *
  * Every access is wrapped: `localStorage` throws in some private-browsing
  * modes, and a storage failure must degrade to "signed out", never to a crash.

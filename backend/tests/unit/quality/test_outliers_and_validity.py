@@ -88,7 +88,7 @@ class TestOutlierDetector:
 
         assert finding.details["scale"] == "log1p"
         # The ten injected values, plus whatever genuine tail sits beyond the
-        # log-scale fence — the point is that all ten are caught.
+        # log-scale fence - the point is that all ten are caught.
         assert set(range(10)).issubset(finding.sample_row_indices)
         assert finding.affected_rows >= 10
 

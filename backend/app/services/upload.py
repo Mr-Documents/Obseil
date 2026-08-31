@@ -50,7 +50,7 @@ def store_upload(*, project_id: str, filename: str, stream: IO[bytes]) -> Stored
     """Validate and persist an uploaded file.
 
     The file is streamed to a temporary file first so that the size limit is
-    enforced as the bytes arrive — an oversized upload never reaches permanent
+    enforced as the bytes arrive - an oversized upload never reaches permanent
     storage, and a rejected upload leaves nothing behind.
     """
     display_name = sanitize_display_name(filename)

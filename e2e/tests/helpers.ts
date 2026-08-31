@@ -3,7 +3,7 @@ import path from 'node:path';
 
 import { expect, type Page } from '@playwright/test';
 
-/** The committed sample datasets — realistic data, not toy fixtures. */
+/** The committed sample datasets - realistic data, not toy fixtures. */
 export const SAMPLES_DIR = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '../../data/samples',
@@ -34,12 +34,25 @@ export async function register(page: Page, account = uniqueAccount()) {
   return account;
 }
 
-export async function signIn(page: Page, account: { email: string; password: string }) {
+export async function signIn(
+  page: Page,
+  account: { email: string; password: string },
+  /**
+   * Where the sign-in is expected to land.
+   *
+   * Signing in after being bounced off a deep link returns the user to that
+   * link rather than to the project list, and the intended destination
+   * survives a reload because React Router keeps it in `history.state`. A
+   * caller that arrived through a redirect has to say where it expects to end
+   * up, or it is asserting the wrong thing.
+   */
+  landsOn: RegExp = /\/projects$/,
+) {
   await page.goto('/login');
   await page.getByLabel('Email address').fill(account.email);
   await page.getByLabel('Password').fill(account.password);
   await page.getByRole('button', { name: /^sign in$/i }).click();
-  await expect(page).toHaveURL(/\/projects$/);
+  await expect(page).toHaveURL(landsOn);
 }
 
 export async function createProject(page: Page, name: string) {

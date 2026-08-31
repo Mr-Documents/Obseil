@@ -122,7 +122,7 @@ def _text_statistics(series: pd.Series) -> TextStatistics:
     """Length distribution plus the two string defects worth counting.
 
     Empty strings and whitespace padding are recorded here because they are
-    *not* missing values as far as pandas is concerned — which is exactly why
+    *not* missing values as far as pandas is concerned - which is exactly why
     they hide in datasets that otherwise look complete.
     """
     text = series.dropna().astype(str)
@@ -185,7 +185,7 @@ def profile_column(
         profile.datetime = _datetime_statistics(coerce_datetime(series))
 
     # Length statistics apply to anything stored as text, including a numeric-like
-    # column — "0012" and "12" are the same number but different strings, and
+    # column - "0012" and "12" are the same number but different strings, and
     # that difference is a quality signal.
     if series.dtype == object or inferred_type in {ColumnType.TEXT, ColumnType.CATEGORICAL}:
         profile.text = _text_statistics(series)
@@ -283,7 +283,7 @@ def is_identifier_like(column: ColumnProfile) -> bool:
     wrong test: a continuous float column such as a transaction amount is
     naturally almost all-distinct, and excluding it would throw away the single
     most informative feature in the dataset. A fully distinct integer column, by
-    contrast, is nearly always a row id — and including one lets a model rank
+    contrast, is nearly always a row id - and including one lets a model rank
     rows by how late they were inserted, which is meaningless.
 
     The trade-off is accepted knowingly: an integer measurement that happens to
