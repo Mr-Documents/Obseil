@@ -61,7 +61,10 @@ test('a new user can go from sign-up to an exported report', async ({ page }, te
   });
 
   await test.step('open a finding and read all five answers', async () => {
-    await page.getByRole('button', { name: /negative values in/i }).first().click();
+    await page
+      .getByRole('button', { name: /negative values in/i })
+      .first()
+      .click();
 
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByText('What happened')).toBeVisible();

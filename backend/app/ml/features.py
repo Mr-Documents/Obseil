@@ -175,12 +175,19 @@ def scale_features(features: pd.DataFrame) -> pd.DataFrame:
     return (features - median) / spread
 
 
-def robust_deviations(features: pd.DataFrame) -> pd.DataFrame:
+def robust_deviations(features: pd.DataFrame, *, subset: np.ndarray | None = None) -> pd.DataFrame:
     """How far each value sits from its column's centre, in IQR units.
 
     Used to say *which values stood out* for an anomalous row. This is a
     descriptive statement about the data, not an attribution of the model's
-    decision — the Isolation Forest does not expose one, and pretending
+    decision - the Isolation Forest does not expose one, and pretending
     otherwise would be a false claim about what the model knows.
+
+    ``subset`` restricts the rows returned while still centring and scaling
+    against the **whole** column, so the numbers are identical to computing it
+    for every row - just without doing so for the 98% nobody will look at.
     """
-    return scale_features(features).abs()
+    median = features.median()
+    spread = (features.quantile(0.75) - features.quantile(0.25)).replace(0, np.nan).fillna(1.0)
+    rows = features if subset is None else features.iloc[subset]
+    return ((rows - median) / spread).abs()

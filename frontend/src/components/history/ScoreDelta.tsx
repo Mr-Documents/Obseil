@@ -52,7 +52,8 @@ export function ScoreDelta({
       <Icon className="size-3.5 shrink-0" aria-hidden="true" />
       {label}
       {unit && delta !== null && direction !== 'unchanged' && (
-        <span className="font-normal opacity-80">{unit}</span>
+        // "%" binds to the number; a word unit like "pts" takes a space.
+        <span className={cn('font-normal opacity-80', unit === '%' && '-ml-1')}>{unit}</span>
       )}
     </span>
   );

@@ -45,9 +45,15 @@ export default defineConfig({
 
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    // The product promises the tables stay usable on a phone, so the journey
-    // is exercised at a phone width too rather than only asserted in review.
-    { name: 'mobile', use: { ...devices['Pixel 7'] }, testMatch: /journey\.spec\.ts/ },
+    // The product promises the tables stay usable on a phone, so the journey is
+    // exercised at a phone width too rather than only asserted in review. The
+    // capture spec is matched as well so the design review can look at the
+    // narrow layout; it stays skipped unless OBSEIL_CAPTURE=1.
+    {
+      name: 'mobile',
+      use: { ...devices['Pixel 7'] },
+      testMatch: /(journey|screenshots)\.spec\.ts/,
+    },
   ],
 
   webServer: [

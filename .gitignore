@@ -22,6 +22,9 @@ coverage/
 /e2e/test-results/
 /e2e/playwright-report/
 /e2e/.auth/
+# Design-review captures are regenerated on demand (OBSEIL_CAPTURE=1);
+# the copies committed for the README live in docs/screenshots/.
+/e2e/screenshots/
 
 # Environment & secrets
 .env

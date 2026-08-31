@@ -108,7 +108,7 @@ test.describe('errors the user can actually hit', () => {
   });
 
   test('another account cannot open your project by guessing the URL', async ({ page }) => {
-    await register(page);
+    const owner = await register(page);
     await createProject(page, 'Private Project');
     const projectUrl = await page
       .getByRole('link', { name: /private project/i })
@@ -122,6 +122,14 @@ test.describe('errors the user can actually hit', () => {
 
     await expect(page.getByText(/project not found/i)).toBeVisible();
     await expect(page.getByText(/may not have access/i)).toBeVisible();
+
+    // Blocking the intruder is only half the guarantee. A scoping bug that hid
+    // the project from everyone would pass the assertions above, so prove the
+    // owner still reaches the very same URL.
+    await page.getByRole('button', { name: /sign out/i }).click();
+    await signIn(page, owner);
+    await page.goto(projectUrl as string);
+    await expect(page.getByRole('heading', { name: /private project/i })).toBeVisible();
   });
 
   test('shows a useful 404 for an unknown route', async ({ page }) => {

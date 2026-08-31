@@ -43,7 +43,10 @@ export async function signIn(page: Page, account: { email: string; password: str
 }
 
 export async function createProject(page: Page, name: string) {
-  await page.getByRole('button', { name: /new project|create your first project/i }).first().click();
+  await page
+    .getByRole('button', { name: /new project|create your first project/i })
+    .first()
+    .click();
 
   const dialog = page.getByRole('dialog');
   await dialog.getByLabel('Name').fill(name);
@@ -60,7 +63,10 @@ export async function createProject(page: Page, name: string) {
  * the URL rather than an arbitrary timeout.
  */
 export async function uploadDataset(page: Page, sample: string, displayName?: string) {
-  await page.getByRole('button', { name: /^upload dataset$|^upload$/i }).first().click();
+  await page
+    .getByRole('button', { name: /^upload dataset$|^upload$/i })
+    .first()
+    .click();
 
   const dialog = page.getByRole('dialog');
   await dialog.locator('input[type="file"]').setInputFiles(samplePath(sample));

@@ -243,8 +243,17 @@ export function DatasetOverviewPage() {
                 title="Anomaly detection was not run"
                 description={dataset.latest_analysis.ml_skipped_reason}
               />
+            ) : anomalies.isError || !anomalies.data ? (
+              // A request that failed must never fall through to the chart's
+              // "no unusual rows" state. Reporting a fetch failure as a clean
+              // result is the one error this product cannot afford to make.
+              <Alert tone="danger" title="Could not load the anomalies">
+                {anomalies.error instanceof ApiError
+                  ? anomalies.error.message
+                  : 'Please try again in a moment.'}
+              </Alert>
             ) : (
-              <AnomalyScoreChart anomalies={anomalies.data?.items ?? []} />
+              <AnomalyScoreChart anomalies={anomalies.data.items} />
             )}
           </CardBody>
         </Card>

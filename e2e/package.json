@@ -9,9 +9,15 @@
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",
     "report": "playwright show-report",
-    "install:browsers": "playwright install --with-deps chromium"
+    "install:browsers": "playwright install --with-deps chromium",
+    "format": "prettier --write \"**/*.{ts,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,json,md}\"",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@playwright/test": "^1.49.0"
+    "@playwright/test": "^1.49.0",
+    "@types/node": "^22.20.1",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2"
   }
 }

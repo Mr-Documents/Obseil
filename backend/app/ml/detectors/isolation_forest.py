@@ -174,7 +174,10 @@ class IsolationForestDetector(AnomalyDetector):
         )
 
         anomaly_scores = _rescale(raw_scores)
-        deviations = robust_deviations(features)
+        # Deviations are only ever read for the flagged rows, so they are
+        # computed for those rows against the full column statistics rather
+        # than for the whole frame.
+        deviations = robust_deviations(features, subset=flagged)
 
         anomalies = [
             AnomalousRow(
@@ -251,7 +254,10 @@ def _contributors(
     their own terms. The Isolation Forest exposes no per-feature attribution,
     and inventing one would misrepresent the model.
     """
-    row = deviations.iloc[position]
+    # `deviations` holds only the flagged rows, but keeps their original
+    # labels — which equal their positions, because the prepared feature frame
+    # is reindexed from zero. So this is a label lookup, not a positional one.
+    row = deviations.loc[position]
     ranked = row.sort_values(ascending=False).head(TOP_CONTRIBUTORS)
     return [
         {

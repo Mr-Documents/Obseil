@@ -13,7 +13,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import type { ColumnProfile } from '@/types/api';
 import { formatNumber, formatPercent, truncate } from '@/utils/format';
 
-import { AXIS_TICK, BAR_RADIUS, SEVERITY_COLORS } from './chartTheme';
+import { AXIS_TICK, BAR_RADIUS, niceAxisMax, SEVERITY_COLORS } from './chartTheme';
 import { ChartTooltip } from './ChartTooltip';
 
 /** Only the worst offenders: a bar per column is unreadable past a dozen. */
@@ -48,6 +48,8 @@ export function MissingValuesChart({ columns }: { columns: ColumnProfile[] }) {
       count: column.missing_count,
     }));
 
+  const axisMax = niceAxisMax(data.length > 0 ? data[0].percentage : 0);
+
   if (data.length === 0) {
     return (
       <EmptyState
@@ -60,14 +62,21 @@ export function MissingValuesChart({ columns }: { columns: ColumnProfile[] }) {
 
   return (
     <div>
-      <ResponsiveContainer width="100%" height={Math.max(data.length * 30 + 24, 120)}>
+      <ResponsiveContainer width="100%" height={Math.max(data.length * 30 + 48, 144)}>
         <BarChart
           data={data}
           layout="vertical"
           margin={{ top: 4, right: 48, bottom: 4, left: 0 }}
           barCategoryGap={6}
         >
-          <XAxis type="number" domain={[0, 100]} hide />
+          <XAxis
+            type="number"
+            domain={[0, axisMax]}
+            axisLine={false}
+            tickLine={false}
+            tick={AXIS_TICK}
+            tickFormatter={(value: number) => `${value}%`}
+          />
           <YAxis
             type="category"
             dataKey="label"
@@ -88,7 +97,14 @@ export function MissingValuesChart({ columns }: { columns: ColumnProfile[] }) {
               />
             }
           />
-          <Bar dataKey="percentage" name="Missing" radius={BAR_RADIUS} isAnimationActive={false}>
+          <Bar
+            dataKey="percentage"
+            name="Missing"
+            radius={BAR_RADIUS}
+            isAnimationActive={false}
+            // Even on a fitted axis the smallest column can round to nothing.
+            minPointSize={2}
+          >
             {data.map((entry) => (
               <Cell key={entry.name} fill={severityFor(entry.percentage)} />
             ))}

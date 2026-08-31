@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import type { Anomaly, ColumnProfile } from '@/types/api';
 
 import { AnomalyScoreChart } from './AnomalyScoreChart';
+import { niceAxisMax } from './chartTheme';
 import { ColumnTypeChart } from './ColumnTypeChart';
 import { MissingValuesChart } from './MissingValuesChart';
 import { SeverityBreakdownChart } from './SeverityBreakdownChart';
@@ -160,5 +161,23 @@ describe('AnomalyScoreChart', () => {
   it('says nothing stood out rather than drawing an empty histogram', () => {
     render(<AnomalyScoreChart anomalies={[]} />);
     expect(screen.getByText(/no unusual rows/i)).toBeInTheDocument();
+  });
+});
+
+describe('niceAxisMax', () => {
+  it('fits the axis to sub-one-percent rates rather than to a hidden 0-100', () => {
+    // The case that made the bars unreadable: two columns under 1% missing.
+    expect(niceAxisMax(0.89)).toBe(1);
+  });
+
+  it('never returns a bound below the value it has to contain', () => {
+    for (const value of [0, 0.01, 1, 1.1, 2, 4.9, 12, 26, 51, 99.9, 100]) {
+      expect(niceAxisMax(value)).toBeGreaterThanOrEqual(value);
+    }
+  });
+
+  it('uses the full scale once a column is mostly empty', () => {
+    expect(niceAxisMax(64)).toBe(100);
+    expect(niceAxisMax(100)).toBe(100);
   });
 });

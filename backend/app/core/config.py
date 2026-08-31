@@ -66,8 +66,18 @@ class Settings(BaseSettings):
     storage_backend: Literal["local"] = "local"
     storage_path: str = "./var/datasets"
     max_upload_bytes: Annotated[int, Field(gt=0)] = 50 * 1024 * 1024
+    #: Above this the dataset is refused outright: a partial answer presented
+    #: as a whole-file answer is worse than no answer.
     max_analysis_rows: Annotated[int, Field(gt=0)] = 1_000_000
-    profile_sample_rows: Annotated[int, Field(gt=0)] = 200_000
+    #: Above this the analysis runs on a deterministic head sample, and says so.
+    #:
+    #: Chosen from measurement, not intuition. Analysis runs inline in the
+    #: upload request, so it has to finish in seconds: profiling a 200,000-row,
+    #: 60-column file takes ~27s, while 50,000 rows takes ~7s. Fifty thousand
+    #: rows is far more than any of the quality statistics need to be reliable,
+    #: and the profile records both the sample size and the true row count so
+    #: no percentage is ever read against the wrong denominator.
+    profile_sample_rows: Annotated[int, Field(gt=0)] = 50_000
 
     # --- Machine learning --------------------------------------------------
     anomaly_contamination: str = "auto"

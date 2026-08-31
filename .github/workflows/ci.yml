@@ -99,7 +99,7 @@ jobs:
           retention-days: 5
 
   migrations:
-    name: Database migrations
+    name: Database migrations (PostgreSQL)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -145,6 +145,82 @@ jobs:
         run: |
           alembic downgrade base
           alembic upgrade head
+
+      # The models and the migrations must not drift apart. This is the check
+      # that catches a model change shipped without a migration.
+      - name: Models match migrations
+        run: alembic check
+
+  e2e:
+    name: End-to-end (Playwright)
+    runs-on: ubuntu-latest
+    # The unit suites are far faster; no point spinning up browsers if they fail.
+    needs: [backend, frontend]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            e2e/package-lock.json
+
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci --no-audit --no-fund
+
+      - name: Install end-to-end dependencies
+        working-directory: e2e
+        run: npm ci --no-audit --no-fund
+
+      - name: Prettier (format check)
+        working-directory: e2e
+        run: npm run format:check
+
+      - name: TypeScript
+        working-directory: e2e
+        run: npm run typecheck
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('e2e/package-lock.json') }}
+
+      - name: Install Playwright browsers
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
+
+      # Playwright starts the API and the built frontend itself; see
+      # e2e/playwright.config.ts.
+      - name: Run end-to-end tests
+        working-directory: e2e
+        run: npx playwright test
+
+      - name: Upload report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            e2e/playwright-report
+            e2e/test-results
+          retention-days: 7
 
   docker:
     name: Container images build

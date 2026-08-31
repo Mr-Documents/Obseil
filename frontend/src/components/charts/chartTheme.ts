@@ -51,3 +51,18 @@ export const BAR_RADIUS: [number, number, number, number] = [0, 4, 4, 0];
 export const COLUMN_RADIUS: [number, number, number, number] = [4, 4, 0, 0];
 
 export const CHART_MARGIN = { top: 8, right: 16, bottom: 0, left: 0 } as const;
+
+/** Candidate upper bounds for a percentage axis, smallest first. */
+const NICE_BOUNDS = [1, 2, 5, 10, 25, 50, 100];
+
+/**
+ * A rounded-up axis bound, so the scale is a number a person can read off.
+ *
+ * A fixed 0-100 axis is truthful but useless for rates that are usually a
+ * fraction of a percent: every bar collapses into a tick against a scale that
+ * is never drawn. Fitting the axis to the data is only honest if the reader can
+ * see the scale, so charts using this must render the axis rather than hide it.
+ */
+export function niceAxisMax(largest: number): number {
+  return NICE_BOUNDS.find((bound) => largest <= bound) ?? 100;
+}

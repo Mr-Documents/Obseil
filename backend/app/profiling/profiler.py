@@ -129,18 +129,28 @@ def _text_statistics(series: pd.Series) -> TextStatistics:
     if text.empty:
         return TextStatistics()
 
+    # Stripped once and reused: both counts need it, and it is a full pass.
+    stripped = text.str.strip()
     lengths = text.str.len()
     return TextStatistics(
         min_length=int(lengths.min()),
         max_length=int(lengths.max()),
         mean_length=_finite(lengths.mean()),
-        empty_string_count=int((text.str.strip() == "").sum()),
-        whitespace_padded_count=int((text != text.str.strip()).sum()),
+        empty_string_count=int((stripped == "").sum()),
+        whitespace_padded_count=int((text != stripped).sum()),
     )
 
 
-def profile_column(series: pd.Series, position: int) -> ColumnProfile:
-    """Profile a single column."""
+def profile_column(
+    series: pd.Series, position: int, *, memory_bytes: int | None = None
+) -> ColumnProfile:
+    """Profile a single column.
+
+    ``memory_bytes`` lets the caller supply a figure it has already computed.
+    ``memory_usage(deep=True)`` walks every object in the column, so computing
+    it per column *and* again for the frame doubled the cost of profiling a
+    wide text-heavy dataset for no benefit.
+    """
     row_count = len(series)
     missing_count = int(series.isna().sum())
     non_missing = row_count - missing_count
@@ -163,7 +173,9 @@ def profile_column(series: pd.Series, position: int) -> ColumnProfile:
             non_missing > 1 and unique_count / non_missing >= IDENTIFIER_UNIQUENESS_THRESHOLD
         ),
         is_numeric_like=is_numeric_like,
-        memory_bytes=int(series.memory_usage(deep=True)),
+        memory_bytes=(
+            int(memory_bytes) if memory_bytes is not None else int(series.memory_usage(deep=True))
+        ),
         top_values=_top_values(series, non_missing),
     )
 
@@ -200,7 +212,13 @@ def profile_dataset(
 
     duplicate_row_count = int(frame.duplicated(keep="first").sum())
 
-    columns = [profile_column(frame[name], position) for position, name in enumerate(frame.columns)]
+    # One deep memory pass for the whole frame, shared with every column.
+    column_memory = frame.memory_usage(deep=True)
+
+    columns = [
+        profile_column(frame[name], position, memory_bytes=int(column_memory.get(name, 0)))
+        for position, name in enumerate(frame.columns)
+    ]
 
     by_type: dict[ColumnType, list[str]] = {column_type: [] for column_type in ColumnType}
     for column in columns:
@@ -214,7 +232,7 @@ def profile_dataset(
         missing_percentage=_percentage(missing_cells, total_cells),
         duplicate_row_count=duplicate_row_count,
         duplicate_row_percentage=_percentage(duplicate_row_count, row_count),
-        memory_bytes=int(frame.memory_usage(deep=True).sum()),
+        memory_bytes=int(column_memory.sum()),
         numeric_columns=by_type[ColumnType.NUMERIC] + by_type[ColumnType.INTEGER],
         categorical_columns=by_type[ColumnType.CATEGORICAL],
         datetime_columns=by_type[ColumnType.DATETIME],
