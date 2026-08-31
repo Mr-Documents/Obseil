@@ -247,11 +247,13 @@ docker compose up --build
 | API | http://localhost:8000 |
 | API docs | http://localhost:8000/docs |
 
-> **Note.** `docker compose config` validates, and both images build in CI on
-> every push (the `docker` job in [`ci.yml`](.github/workflows/ci.yml)). The
-> full three-service stack has **not** been run end-to-end on a developer
-> machine - if you hit a problem with it, please open an issue rather than
-> assume you are holding it wrong.
+The API container runs `alembic upgrade head` on start, so the schema is
+created for you. All three services declare healthchecks, and `db` gates `api`
+via `depends_on: service_healthy`.
+
+This path is verified end to end: both images build, all three containers
+report healthy from an empty volume, and the sample datasets score identically
+against PostgreSQL to the way they score on SQLite.
 
 ### Without Docker
 

@@ -31,7 +31,11 @@ USER nginx
 
 EXPOSE 8080
 
+# Probe 127.0.0.1, not "localhost": nginx binds IPv4 only (see nginx.conf),
+# while this image resolves localhost to ::1, so the check was refused on a
+# container that was serving perfectly well. busybox wget does not fall back
+# to IPv4 the way curl does, so the address has to be explicit.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget -qO- http://localhost:8080/ >/dev/null || exit 1
+    CMD wget -qO- http://127.0.0.1:8080/ >/dev/null || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]

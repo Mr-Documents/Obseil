@@ -46,8 +46,11 @@ USER obseil
 
 EXPOSE 8000
 
+# 127.0.0.1 for the same reason as the web image: uvicorn binds IPv4, and
+# relying on curl's IPv6-to-IPv4 fallback makes the check depend on the base
+# image's hosts file rather than on the server actually being up.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=5 \
-    CMD curl -fsS http://localhost:8000/api/v1/health || exit 1
+    CMD curl -fsS http://127.0.0.1:8000/api/v1/health || exit 1
 
 ENTRYPOINT ["/app/scripts/entrypoint.sh"]
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
