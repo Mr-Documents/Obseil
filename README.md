@@ -115,16 +115,16 @@ python -c "import secrets; print(secrets.token_urlsafe(48))"
 ## Testing
 
 ```bash
-# Backend — unit + API tests, no services required
+# Backend - unit + API tests, no services required
 cd backend && pytest
 
-# Backend — lint, format and types
+# Backend - lint, format and types
 ruff check . && black --check . && mypy app
 
-# Frontend — unit and component tests
+# Frontend - unit and component tests
 cd frontend && npm test
 
-# Frontend — lint, format and types
+# Frontend - lint, format and types
 npm run lint && npm run format:check && npm run typecheck
 ```
 
@@ -157,7 +157,7 @@ npm run lint && npm run format:check && npm run typecheck
 
 ## Contributing
 
-Obseil is built to be extended — new quality detectors, new anomaly detectors,
+Obseil is built to be extended - new quality detectors, new anomaly detectors,
 new file formats, new report formats. Start with
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
