@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Generator, Iterator
 from contextlib import contextmanager
+from pathlib import Path
 
 from sqlalchemy import Engine, create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
@@ -25,6 +26,25 @@ def _is_in_memory_sqlite(url: str) -> bool:
     """
     path = url.partition("://")[2].partition("?")[0].lstrip("/")
     return path in {"", ":memory:"}
+
+
+def ensure_sqlite_directory(url: str) -> None:
+    """Create the directory that will hold a file-backed SQLite database.
+
+    SQLite creates the database file but never the directory above it, so a
+    URL like ``sqlite:///./var/app.db`` fails with "unable to open database
+    file" whenever ``var/`` is absent. It usually is: runtime directories are
+    gitignored, so this is the state of every fresh checkout and every CI run.
+
+    Alembic hits this before the application does, because migrations run first
+    and nothing has had a chance to create the directory yet.
+    """
+    if not url.startswith("sqlite") or _is_in_memory_sqlite(url):
+        return
+    database = url.partition("://")[2].partition("?")[0].lstrip("/")
+    parent = Path(database).parent
+    if str(parent) not in ("", "."):
+        parent.mkdir(parents=True, exist_ok=True)
 
 
 def _engine_kwargs(url: str) -> dict[str, object]:
@@ -55,6 +75,8 @@ def _engine_kwargs(url: str) -> dict[str, object]:
         "pool_recycle": 1800,
     }
 
+
+ensure_sqlite_directory(settings.database_url)
 
 engine: Engine = create_engine(
     settings.database_url,

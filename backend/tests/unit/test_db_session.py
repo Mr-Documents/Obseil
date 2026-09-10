@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from sqlalchemy.pool import QueuePool, StaticPool
 
-from app.db.session import _engine_kwargs, _is_in_memory_sqlite
+from app.db.session import _engine_kwargs, _is_in_memory_sqlite, ensure_sqlite_directory
 
 
 @pytest.mark.parametrize(
@@ -45,3 +47,38 @@ class TestEnginePooling:
         kwargs = _engine_kwargs("postgresql+psycopg://obseil:obseil@localhost:5432/obseil")
         assert kwargs["pool_pre_ping"] is True
         assert "poolclass" not in kwargs
+
+
+class TestSqliteDirectory:
+    """SQLite creates the database file but never the directory holding it."""
+
+    def test_a_missing_directory_is_created(self, tmp_path: Path) -> None:
+        """The CI failure this fixes: `var/` is gitignored, so a fresh
+        checkout has no directory for the database to live in, and Alembic
+        dies with "unable to open database file" before anything can run."""
+        target = tmp_path / "var" / "e2e.db"
+        ensure_sqlite_directory(f"sqlite+pysqlite:///{target.as_posix()}")
+        assert target.parent.is_dir()
+
+    def test_nested_directories_are_created(self, tmp_path: Path) -> None:
+        target = tmp_path / "a" / "b" / "c" / "app.db"
+        ensure_sqlite_directory(f"sqlite+pysqlite:///{target.as_posix()}")
+        assert target.parent.is_dir()
+
+    def test_an_existing_directory_is_left_alone(self, tmp_path: Path) -> None:
+        keeper = tmp_path / "keep.txt"
+        keeper.write_text("untouched", encoding="utf-8")
+        ensure_sqlite_directory(f"sqlite+pysqlite:///{(tmp_path / 'app.db').as_posix()}")
+        assert keeper.read_text(encoding="utf-8") == "untouched"
+
+    def test_an_in_memory_database_creates_nothing(self, tmp_path: Path) -> None:
+        ensure_sqlite_directory("sqlite+pysqlite:///:memory:")
+        assert not list(tmp_path.iterdir())
+
+    def test_postgresql_is_ignored(self, tmp_path: Path) -> None:
+        ensure_sqlite_directory("postgresql+psycopg://obseil:obseil@localhost:5432/obseil")
+        assert not list(tmp_path.iterdir())
+
+    def test_a_bare_filename_needs_no_directory(self) -> None:
+        """Must not raise, and must not create anything called "."."""
+        ensure_sqlite_directory("sqlite+pysqlite:///app.db")

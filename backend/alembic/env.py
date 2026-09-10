@@ -14,10 +14,15 @@ from sqlalchemy import engine_from_config, pool
 
 from app.core.config import settings
 from app.db.base import Base
+from app.db.session import ensure_sqlite_directory
 from app.models import registry as _registry  # noqa: F401  (imports every model)
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.database_url)
+
+# Migrations run before anything else, so on a fresh checkout this is what
+# creates the directory a file-backed SQLite database needs to live in.
+ensure_sqlite_directory(settings.database_url)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
