@@ -7,7 +7,12 @@ from pathlib import Path
 import pytest
 from sqlalchemy.pool import QueuePool, StaticPool
 
-from app.db.session import _engine_kwargs, _is_in_memory_sqlite, ensure_sqlite_directory
+from app.db.session import (
+    _engine_kwargs,
+    _is_in_memory_sqlite,
+    _sqlite_path,
+    ensure_sqlite_directory,
+)
 
 
 @pytest.mark.parametrize(
@@ -82,3 +87,37 @@ class TestSqliteDirectory:
     def test_a_bare_filename_needs_no_directory(self) -> None:
         """Must not raise, and must not create anything called "."."""
         ensure_sqlite_directory("sqlite+pysqlite:///app.db")
+
+
+class TestSqliteUrlSlashes:
+    """Three slashes mean relative, four mean absolute.
+
+    These assert the parsing directly rather than through the filesystem, so
+    the distinction is checked on every platform. Going through `tmp_path`
+    hides it on Windows, where an absolute path starts with a drive letter and
+    survives having its leading slashes stripped - which is exactly how this
+    shipped and then failed on Linux CI.
+    """
+
+    @pytest.mark.parametrize(
+        ("url", "expected"),
+        [
+            ("sqlite:///relative.db", "relative.db"),
+            ("sqlite+pysqlite:///./var/e2e.db", "./var/e2e.db"),
+            ("sqlite:///nested/dir/app.db", "nested/dir/app.db"),
+            # Four slashes: the path itself is absolute and must stay that way.
+            ("sqlite:////var/lib/obseil/app.db", "/var/lib/obseil/app.db"),
+            ("sqlite+pysqlite:////tmp/pytest-1/var/e2e.db", "/tmp/pytest-1/var/e2e.db"),
+            # Windows spells an absolute path with a drive letter.
+            ("sqlite:///C:/data/app.db", "C:/data/app.db"),
+            ("sqlite:///:memory:", ":memory:"),
+            ("sqlite://", ""),
+        ],
+    )
+    def test_exactly_one_leading_slash_belongs_to_the_scheme(self, url: str, expected: str) -> None:
+        assert _sqlite_path(url) == expected
+
+    def test_an_absolute_url_is_not_turned_into_a_relative_path(self) -> None:
+        """The regression: a directory created under the working directory
+        instead of at the absolute location the operator configured."""
+        assert _sqlite_path("sqlite:////var/lib/obseil/app.db").startswith("/")

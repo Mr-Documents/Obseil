@@ -18,14 +18,26 @@ from sqlalchemy.pool import QueuePool, StaticPool
 from app.core.config import settings
 
 
+def _sqlite_path(url: str) -> str:
+    """The database portion of a SQLite URL.
+
+    SQLAlchemy spells a *relative* path with three slashes and an *absolute*
+    one with four, so exactly one leading slash belongs to the scheme and any
+    others belong to the path. Stripping them all silently turns
+    ``sqlite:////var/lib/app.db`` into a path relative to the working
+    directory - which looks fine on Windows, where absolute paths start with a
+    drive letter, and is wrong everywhere else.
+    """
+    return url.partition("://")[2].partition("?")[0].removeprefix("/")
+
+
 def _is_in_memory_sqlite(url: str) -> bool:
     """True for SQLite URLs whose database lives inside the connection itself.
 
     Both spellings count: an explicit ``:memory:`` and the bare ``sqlite://``
     with no path at all.
     """
-    path = url.partition("://")[2].partition("?")[0].lstrip("/")
-    return path in {"", ":memory:"}
+    return _sqlite_path(url) in {"", ":memory:"}
 
 
 def ensure_sqlite_directory(url: str) -> None:
@@ -41,8 +53,7 @@ def ensure_sqlite_directory(url: str) -> None:
     """
     if not url.startswith("sqlite") or _is_in_memory_sqlite(url):
         return
-    database = url.partition("://")[2].partition("?")[0].lstrip("/")
-    parent = Path(database).parent
+    parent = Path(_sqlite_path(url)).parent
     if str(parent) not in ("", "."):
         parent.mkdir(parents=True, exist_ok=True)
 
