@@ -23,7 +23,11 @@
     "exactOptionalPropertyTypes": false,
     "verbatimModuleSyntax": false,
 
-    "baseUrl": ".",
+    /* No `baseUrl`: since TypeScript 4.1 `paths` resolves relative to this
+       file, and TypeScript 7 drops the option entirely. Leaving it out also
+       closes a footgun - `baseUrl` makes every file beneath it importable as a
+       bare specifier, so `import 'components/Button'` would silently resolve
+       and could shadow a real package. */
     "paths": { "@/*": ["./src/*"] },
     "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"]
   },
