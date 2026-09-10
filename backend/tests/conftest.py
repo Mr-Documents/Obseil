@@ -19,11 +19,17 @@ os.environ.setdefault("OBSEIL_ENV", "test")
 os.environ.setdefault("OBSEIL_SECRET_KEY", "test-secret-key-not-used-in-production-0123456789")
 os.environ["OBSEIL_DATABASE_URL"] = "sqlite+pysqlite:///:memory:"
 os.environ["OBSEIL_STORAGE_PATH"] = str(_TMP_STORAGE)
+# bcrypt's real cost is the single slowest thing in this suite. Four is the
+# library minimum and is fine here: these tests assert that hashing happens and
+# that it salts, never that it is expensive. Production refuses anything below
+# `MINIMUM_PRODUCTION_HASH_ROUNDS`, which `test_security.py` asserts.
+os.environ["OBSEIL_PASSWORD_HASH_ROUNDS"] = "4"
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
 
+from app.core.ratelimit import InMemoryRateLimiter  # noqa: E402
 from app.db.base import Base  # noqa: E402
 from app.db.session import SessionLocal, engine, get_db  # noqa: E402
 from app.main import create_app  # noqa: E402
@@ -40,6 +46,23 @@ def _database() -> Iterator[None]:
     Base.metadata.create_all(bind=engine)
     yield
     Base.metadata.drop_all(bind=engine)
+
+
+@pytest.fixture(autouse=True)
+def _login_attempts() -> Iterator[None]:
+    """Give every test a clean slate of login failures.
+
+    The limiter is module state that deliberately outlives a request, so
+    without this a test that exhausts the limit would make later tests fail
+    depending on the order they ran in.
+    """
+    from app.api.v1.routes.auth import login_limiter
+
+    if isinstance(login_limiter, InMemoryRateLimiter):
+        login_limiter.clear()
+    yield
+    if isinstance(login_limiter, InMemoryRateLimiter):
+        login_limiter.clear()
 
 
 @pytest.fixture

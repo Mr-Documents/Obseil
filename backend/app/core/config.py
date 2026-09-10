@@ -16,6 +16,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 Environment = Literal["development", "test", "production"]
 
+#: The lowest bcrypt cost production will accept. Twelve is the library
+#: default and roughly a tenth of a second per hash on current hardware.
+MINIMUM_PRODUCTION_HASH_ROUNDS = 12
+
 _INSECURE_SECRETS = {
     "",
     "change-me",
@@ -52,6 +56,21 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: Annotated[int, Field(gt=0, le=60 * 24)] = 30
     refresh_token_expire_days: Annotated[int, Field(gt=0, le=365)] = 14
+
+    # --- Login rate limiting -----------------------------------------------
+    # Counted per client address, and only on failures, so a legitimate user
+    # who signs in correctly never meets it. Ten in five minutes stops a script
+    # while leaving room for a person who has genuinely forgotten which
+    # password they used.
+    # bcrypt's cost is deliberately expensive, which makes the auth tests the
+    # slowest in the suite. Lowering it for tests is safe and worth several
+    # seconds a run; `_reject_insecure_production_config` refuses anything
+    # below `MINIMUM_PRODUCTION_HASH_ROUNDS` outside development.
+    password_hash_rounds: Annotated[int, Field(ge=4, le=18)] = 12
+
+    login_rate_limit_enabled: bool = True
+    login_max_attempts: Annotated[int, Field(gt=0, le=1000)] = 10
+    login_attempt_window_seconds: Annotated[int, Field(gt=0, le=86_400)] = 300
 
     # --- Database ----------------------------------------------------------
     database_url: str = "postgresql+psycopg://obseil:obseil@localhost:5432/obseil"
@@ -115,6 +134,11 @@ class Settings(BaseSettings):
                 )
             if self.debug:
                 raise ValueError("OBSEIL_DEBUG must be false in production.")
+            if self.password_hash_rounds < MINIMUM_PRODUCTION_HASH_ROUNDS:
+                raise ValueError(
+                    "OBSEIL_PASSWORD_HASH_ROUNDS must be at least "
+                    f"{MINIMUM_PRODUCTION_HASH_ROUNDS} in production."
+                )
         return self
 
     # --- Derived helpers ---------------------------------------------------

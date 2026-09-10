@@ -36,6 +36,8 @@ denial of service beyond the configured upload limit. Stated in
 | Password never echoed in a response | `schemas/auth.py` | `test_passwords_are_never_returned` |
 | Over-length passwords rejected, not silently truncated | `core/security.py` | `test_overlong_password_is_rejected_rather_than_truncated` |
 | Malformed stored hash fails closed | `core/security.py` | `test_malformed_hash_fails_closed_instead_of_raising` |
+| Work factor configurable, with a production floor | `core/config.py` | `test_production_refuses_a_weak_work_factor` |
+| Repeated failed logins are rate limited | `core/ratelimit.py` | `TestLoginRateLimiting` |
 
 **bcrypt is used directly, not through passlib**, which is unmaintained and
 breaks against modern bcrypt releases.
@@ -48,11 +50,56 @@ authenticating the same account.
 
 An unknown email and a wrong password return **byte-identical** responses. When
 the email is unknown, the service still verifies the submitted password against
-a fixed dummy hash so the response time does not give the answer away either.
+a dummy hash so the response time does not give the answer away either.
+
+That dummy hash is **generated at import from the configured work factor**, not
+hardcoded. It used to be a literal pinned at cost 12, which was correct only
+while the real cost also happened to be 12. Making the cost configurable
+exposed the flaw: raise `OBSEIL_PASSWORD_HASH_ROUNDS` to 14 and the
+unknown-email path would have become roughly four times faster than the
+wrong-password path, restoring by the back door exactly the timing oracle this
+dummy hash exists to close. `test_the_equal_timing_hash_matches_the_configured_cost`
+now pins the two together.
 
 - Enforced in `services/auth_service.py`
 - Verified by `test_unknown_email_gives_the_same_error_as_a_wrong_password`
 - Verified end to end by `e2e/tests/auth-and-errors.spec.ts`
+
+### Rate limiting
+
+Failed logins are counted per client address over a sliding five-minute window;
+the eleventh is refused with **429 and a `Retry-After`** rather than checked.
+
+The design decision worth stating is what is *not* counted. A counter keyed on
+the submitted email would let anybody lock a chosen victim out of their own
+account simply by submitting bad passwords for it. Keying on the caller means
+an attacker can only ever rate-limit themselves.
+
+| Property | Why |
+| --- | --- |
+| Only failures count | Signing in correctly never moves a legitimate user closer to a lockout |
+| A success clears the count | Mistyping a password three times then getting it right leaves no residue |
+| The limit applies before credentials are checked | Otherwise a correct guess would still be accepted, and the limit would not slow guessing at all |
+| The 429 is identical for real and unknown accounts | A rate-limited response that differed would be a new enumeration oracle |
+| The key table is LRU-bounded | An attacker cycling source addresses must not be able to grow it without limit - the limiter itself becoming the denial of service |
+
+Two limitations, both deliberate:
+
+- **Counts live in this process.** Correct for the single container this ships
+  as; more than one replica needs shared storage behind the same `RateLimiter`
+  interface, which is why that interface exists.
+- **Users sharing one outbound address share a counter.** An office behind NAT
+  may want `OBSEIL_LOGIN_MAX_ATTEMPTS` raised. Brute force needs thousands of
+  attempts, so a generous limit still removes almost all of the risk.
+
+Behind a reverse proxy the client address is the proxy unless uvicorn runs with
+`--proxy-headers` and a trusted `--forwarded-allow-ips`. Obseil deliberately
+does **not** parse `X-Forwarded-For` itself: any caller can set that header, so
+trusting it unconditionally would let an attacker step around the limit by
+inventing a new address per request.
+
+A distributed attack across many addresses is not stopped here. That belongs at
+the proxy or WAF layer, which can see the whole fleet.
 
 ---
 
@@ -89,11 +136,33 @@ objects by id without that join.
 **Another user's resource returns 404, never 403.** A 403 confirms that the id
 exists, which is itself information the caller has no right to.
 
-`test_every_scoped_endpoint_is_protected` enumerates **19 endpoints** and
-asserts each returns 404 for a non-owner. `test_every_scoped_endpoint_requires_a_token`
-asserts each returns 401 with no token. Adding an endpoint without adding it to
-that list is the one gap this design has; the list is deliberately explicit so
-the omission is visible in review.
+One list, `SCOPED_ENDPOINTS`, names all **22 resource-scoped endpoints** and
+drives three checks:
+
+| Test | Asserts |
+| --- | --- |
+| `test_the_matrix_lists_every_scoped_route` | The list matches the router exactly |
+| `test_every_scoped_endpoint_is_protected` | Each returns 404 for a signed-in non-owner |
+| `test_every_scoped_endpoint_requires_a_token` | Each returns 401 with no token |
+
+The first of those closes what used to be this design's one gap: adding a route
+was previously enough to ship it untested, because the other two only checked
+what somebody had remembered to write down. It now walks the router tree,
+selects every path carrying an owned resource id (`project_id`, `dataset_id`,
+`analysis_id`, `finding_id`), and fails if the list and the router disagree in
+either direction - a missing entry, or a stale one for a route that is gone.
+
+Introducing it immediately found three scoped endpoints that no test had ever
+covered: `GET` and `PATCH /findings/{finding_id}`, and
+`POST /projects/{project_id}/datasets` - uploading a dataset into someone
+else's project. All three were correctly protected; none of them was proven to
+be. That is the distinction the check exists to remove.
+
+Two details make it trustworthy rather than decorative. It walks the router
+rather than reading the OpenAPI schema, because a route hidden from the docs is
+where a missing check would hide; and it asserts a floor on the number of
+routes found, so that a FastAPI change that breaks the walk fails loudly
+instead of passing with an empty set.
 
 ---
 
@@ -212,8 +281,8 @@ deliberate deferral.
 
 | Gap | Why it is acceptable now | What would close it |
 | --- | --- | --- |
-| No rate limiting on login | Single-tenant self-hosted MVP; the constant-time equal-response design already removes the enumeration payoff | A reverse-proxy rate limit, or a per-account lockout counter |
+| Rate limit counts live in one process | Correct for the single container Obseil ships as | A shared store behind the existing `RateLimiter` interface |
+| Distributed brute force is not stopped | A per-address limit cannot see a botnet; the realistic single-host attack is stopped | A proxy or WAF rate limit across the fleet |
 | Tokens in `localStorage` | Standard SPA trade-off, mitigated by short expiry and no third-party scripts | httpOnly refresh cookie + in-memory access token |
 | No server-side token revocation | Stateless JWTs; logout is client-side | A revocation list keyed on the `jti` claim, which every token already carries |
 | No audit log | Structured request logs cover the operational need | An append-only table of security-relevant actions |
-| Adding an endpoint can miss the authorisation test list | The list is explicit and reviewed | A test that enumerates the router and asserts each scoped route is covered |

@@ -42,10 +42,12 @@ def _error_response(
     code: str,
     message: str,
     details: dict[str, Any] | None = None,
+    headers: dict[str, str] | None = None,
 ) -> JSONResponse:
     """Build the single error envelope used by every failure path."""
     return JSONResponse(
         status_code=status_code,
+        headers=headers,
         content={
             "error": {
                 "code": code,
@@ -138,7 +140,7 @@ def create_app() -> FastAPI:
             exc.message,
             extra={"path": request.url.path, "status_code": exc.status_code},
         )
-        return _error_response(exc.status_code, exc.code, exc.message, exc.details)
+        return _error_response(exc.status_code, exc.code, exc.message, exc.details, exc.headers)
 
     @app.exception_handler(RequestValidationError)
     async def handle_validation_error(

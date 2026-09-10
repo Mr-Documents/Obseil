@@ -8,6 +8,7 @@ active-account checks) exist in exactly one place.
 from __future__ import annotations
 
 import logging
+import secrets
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -30,7 +31,13 @@ logger = logging.getLogger(__name__)
 # A real bcrypt hash of a value nobody can supply. Verifying against it when the
 # email is unknown keeps login timing roughly constant, so an attacker cannot
 # enumerate registered addresses by measuring response times.
-_DUMMY_HASH = "$2b$12$C6UzMDM.H6dfI/f/IKcEeO3Nc0iCfvJvQ5cwGSt7A0K0MRbF9xJZ2"
+#
+# Generated at import rather than hardcoded, because the comparison only holds
+# if this hash carries the *same* work factor as the stored passwords it stands
+# in for. A literal pinned at one cost would start leaking the difference the
+# moment an operator changed `OBSEIL_PASSWORD_HASH_ROUNDS` - the timing oracle
+# would be back, quietly, on exactly the path built to close it.
+_DUMMY_HASH = hash_password(secrets.token_urlsafe(32))
 
 
 def normalize_email(email: str) -> str:

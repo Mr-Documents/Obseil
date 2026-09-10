@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Request, status
 
 from app.api.deps import CurrentUser, DbSession
+from app.core.config import settings
+from app.core.errors import AuthenticationError, RateLimitedError
+from app.core.ratelimit import InMemoryRateLimiter, NullRateLimiter, RateLimiter
 from app.schemas.auth import (
     AuthResponse,
     LoginRequest,
@@ -17,6 +20,32 @@ from app.schemas.common import MessageResponse
 from app.services import auth_service
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+
+def _build_login_limiter() -> RateLimiter:
+    if not settings.login_rate_limit_enabled:
+        return NullRateLimiter()
+    return InMemoryRateLimiter(
+        max_attempts=settings.login_max_attempts,
+        window_seconds=settings.login_attempt_window_seconds,
+    )
+
+
+#: Module-level so the counts survive between requests. In-process, so it is
+#: correct for the single-container deployment this ships as; more than one
+#: replica needs shared storage behind the same `RateLimiter` interface.
+login_limiter: RateLimiter = _build_login_limiter()
+
+
+def client_key(request: Request) -> str:
+    """The caller's address, which is what login failures are counted against.
+
+    Behind a reverse proxy this is the proxy unless uvicorn is run with
+    `--proxy-headers` and a trusted `--forwarded-allow-ips`. Parsing
+    `X-Forwarded-For` here instead would let any caller spoof the header and
+    step around the limit entirely.
+    """
+    return request.client.host if request.client else "unknown"
 
 
 @router.post(
@@ -41,10 +70,27 @@ def register(payload: RegisterRequest, db: DbSession) -> AuthResponse:
     "/login",
     response_model=AuthResponse,
     summary="Sign in",
-    responses={401: {"description": "Incorrect email or password"}},
+    responses={
+        401: {"description": "Incorrect email or password"},
+        429: {"description": "Too many failed attempts from this address"},
+    },
 )
-def login(payload: LoginRequest, db: DbSession) -> AuthResponse:
-    user = auth_service.authenticate_user(db, email=payload.email, password=payload.password)
+def login(payload: LoginRequest, request: Request, db: DbSession) -> AuthResponse:
+    key = client_key(request)
+
+    wait = login_limiter.retry_after(key)
+    if wait is not None:
+        raise RateLimitedError(wait)
+
+    try:
+        user = auth_service.authenticate_user(db, email=payload.email, password=payload.password)
+    except AuthenticationError:
+        # Only failures are counted, so signing in correctly never brings a
+        # legitimate user closer to being locked out.
+        login_limiter.record_failure(key)
+        raise
+
+    login_limiter.reset(key)
     return AuthResponse(user=UserRead.model_validate(user), tokens=auth_service.issue_tokens(user))
 
 

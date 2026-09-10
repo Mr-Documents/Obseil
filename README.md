@@ -299,6 +299,8 @@ The ones worth knowing:
 | `OBSEIL_PROFILE_SAMPLE_ROWS` | 50,000 | Above this, analysis runs on a head sample (always disclosed in the UI) |
 | `OBSEIL_MAX_ANALYSIS_ROWS` | 1,000,000 | Above this, the file is refused outright |
 | `OBSEIL_ANOMALY_CONTAMINATION` | `auto` | Overrides the derived threshold |
+| `OBSEIL_LOGIN_MAX_ATTEMPTS` | 10 | Failed logins per client address before a 429; raise it if your users share one outbound address |
+| `OBSEIL_PASSWORD_HASH_ROUNDS` | 12 | bcrypt work factor; production refuses anything lower |
 
 Generate a secret with:
 
@@ -308,7 +310,7 @@ python -c "import secrets; print(secrets.token_urlsafe(48))"
 
 ## Testing
 
-**539 tests**: 407 backend, 120 frontend, 12 end-to-end scenarios (the journey
+**578 tests**: 446 backend, 120 frontend, 12 end-to-end scenarios (the journey
 runs at both desktop and phone widths).
 
 ```bash
@@ -333,9 +335,10 @@ Two things the test suite does that are worth calling out:
 - **Six purpose-built fixtures** in [`data/samples/`](data/samples/) with known
   defects. `clean_transactions.csv` producing **zero** rule findings is an
   assertion, not an aspiration - it is how false positives get caught.
-- **A 19-endpoint authorization matrix** in
-  `backend/tests/api/test_security.py`, which fails if any endpoint is ever
-  added without an ownership check.
+- **A 22-endpoint authorization matrix** in
+  `backend/tests/api/test_security.py`. One list drives three checks, and one
+  of them walks the router itself, so adding a scoped route without covering it
+  fails the build rather than passing quietly.
 
 The E2E suite found two real bugs the unit tests could not - see
 [`e2e/README.md`](e2e/README.md).

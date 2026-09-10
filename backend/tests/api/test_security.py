@@ -9,17 +9,107 @@ rather than by an incident.
 from __future__ import annotations
 
 import io
-from collections.abc import Callable
+import re
+from collections.abc import Callable, Iterator
+from typing import Any
 
 import pytest
+from fastapi.routing import APIRoute, APIRouter
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.security import hash_password
+from app.main import create_app
 from app.models.user import User
+from app.services import auth_service
 from tests.conftest import DEFAULT_PASSWORD
+from tests.fixtures import sample_bytes
 
 CSV = b"id,amount\n1,10.5\n2,20.0\n"
+
+
+#: Path parameters that name a resource somebody owns. Any route carrying one
+#: has to reject an id belonging to another account.
+OWNED_PATH_PARAMETERS = frozenset({"project_id", "dataset_id", "analysis_id", "finding_id"})
+
+#: Every resource-scoped endpoint, as (method, path template).
+#:
+#: One list drives three properties: that each endpoint rejects another
+#: account's id, that each rejects an anonymous caller, and - via
+#: ``test_the_matrix_lists_every_scoped_route`` - that no scoped route is
+#: missing from the list. That last check is what stops an endpoint shipping
+#: untested, which is how the two findings routes and the dataset upload came
+#: to be sitting here unverified.
+SCOPED_ENDPOINTS: tuple[tuple[str, str], ...] = (
+    ("GET", "/api/v1/projects/{project_id}"),
+    ("PATCH", "/api/v1/projects/{project_id}"),
+    ("DELETE", "/api/v1/projects/{project_id}"),
+    ("GET", "/api/v1/projects/{project_id}/datasets"),
+    ("POST", "/api/v1/projects/{project_id}/datasets"),
+    ("GET", "/api/v1/projects/{project_id}/history"),
+    ("GET", "/api/v1/projects/{project_id}/history/trend"),
+    ("GET", "/api/v1/datasets/{dataset_id}"),
+    ("DELETE", "/api/v1/datasets/{dataset_id}"),
+    ("POST", "/api/v1/datasets/{dataset_id}/analyze"),
+    ("GET", "/api/v1/datasets/{dataset_id}/statistics"),
+    ("GET", "/api/v1/datasets/{dataset_id}/preview"),
+    ("GET", "/api/v1/datasets/{dataset_id}/findings"),
+    ("GET", "/api/v1/datasets/{dataset_id}/findings/summary"),
+    ("GET", "/api/v1/datasets/{dataset_id}/anomalies"),
+    ("GET", "/api/v1/datasets/{dataset_id}/anomalies/overview"),
+    ("GET", "/api/v1/datasets/{dataset_id}/score"),
+    ("GET", "/api/v1/datasets/{dataset_id}/history"),
+    ("GET", "/api/v1/findings/{finding_id}"),
+    ("PATCH", "/api/v1/findings/{finding_id}"),
+    ("GET", "/api/v1/analyses/{analysis_id}/compare"),
+    ("POST", "/api/v1/reports/{analysis_id}/export"),
+)
+
+#: A walk that finds nothing would make every check below vacuously pass, so
+#: the enumeration is asserted against a floor. Raise it as routes are added.
+MINIMUM_EXPECTED_ROUTES = 25
+
+
+def _request_body(method: str, template: str) -> dict[str, Any]:
+    """Whatever a request needs besides its path to reach the ownership check.
+
+    The upload endpoint parses its multipart body while resolving dependencies,
+    so without a file it fails validation first - and a 422 would be mistaken
+    for a test that passed.
+    """
+    if method == "POST" and template.endswith("/datasets"):
+        return {"files": {"file": ("data.csv", io.BytesIO(CSV), "text/csv")}}
+    if method == "PATCH" and template.endswith("/findings/{finding_id}"):
+        # Triage rejects an empty body during validation, which happens before
+        # the handler runs. Without a valid body the request would 422 and
+        # never reach the ownership check this test exists to exercise.
+        return {"json": {"status": "reviewed"}}
+    return {"json": {}}
+
+
+def _api_routes() -> Iterator[tuple[str, str]]:
+    """Every (method, path) the application actually serves.
+
+    Walks the router tree rather than reading the OpenAPI schema, because a
+    route hidden from the docs is exactly where a missing check would hide.
+    """
+
+    def walk(routes: list[Any], prefix: str = "") -> Iterator[tuple[str, str]]:
+        for route in routes:
+            if isinstance(route, APIRoute):
+                for method in route.methods - {"HEAD", "OPTIONS"}:
+                    yield method, prefix + route.path
+            elif hasattr(route, "original_router"):  # a router included in the app
+                yield from walk(route.original_router.routes, prefix + route.include_context.prefix)
+            elif isinstance(route, APIRouter):
+                yield from walk(route.routes, prefix + route.prefix)
+
+    yield from walk(create_app().routes)
+
+
+def _is_scoped(path: str) -> bool:
+    return bool(set(re.findall(r"{(\w+)}", path)) & OWNED_PATH_PARAMETERS)
 
 
 @pytest.fixture
@@ -87,6 +177,34 @@ class TestPasswordHandling:
         assert len(set(hashes)) == len(hashes), "identical passwords must not share a hash"
 
 
+class TestPasswordHashCost:
+    """The work factor is tunable, but only downwards outside production."""
+
+    def test_production_refuses_a_weak_work_factor(self) -> None:
+        from pydantic import ValidationError as PydanticValidationError
+
+        from app.core.config import MINIMUM_PRODUCTION_HASH_ROUNDS, Settings
+
+        with pytest.raises(PydanticValidationError, match="PASSWORD_HASH_ROUNDS"):
+            Settings(
+                env="production",
+                debug=False,
+                secret_key="x" * 48,
+                password_hash_rounds=MINIMUM_PRODUCTION_HASH_ROUNDS - 1,
+            )
+
+    def test_the_equal_timing_hash_matches_the_configured_cost(self) -> None:
+        """The dummy hash stands in for a real one, so it must cost the same.
+
+        Verifying a cheaper hash for unknown emails than for known ones makes
+        login timing depend on whether the account exists - which is the
+        enumeration oracle this dummy hash was introduced to remove.
+        """
+        prefix = f"$2b${settings.password_hash_rounds:02d}$"
+        assert auth_service._DUMMY_HASH.startswith(prefix)
+        assert hash_password("anything").startswith(prefix)
+
+
 class TestTokenHandling:
     def test_a_tampered_token_is_rejected(self, client: TestClient, user: User) -> None:
         token = client.post(
@@ -126,6 +244,28 @@ class TestTokenHandling:
 class TestAuthorizationCoverage:
     """Every resource-scoped endpoint must reject another user's id."""
 
+    def test_the_matrix_lists_every_scoped_route(self) -> None:
+        """The list below must not fall behind the router.
+
+        Without this, adding a route is enough to ship it unprotected: the
+        other two tests only check what someone remembered to write down.
+        """
+        served = set(_api_routes())
+        assert len(served) >= MINIMUM_EXPECTED_ROUTES, (
+            f"only found {len(served)} routes - the router walk is broken, "
+            "so every authorization check below is passing vacuously"
+        )
+
+        scoped = {(method, path) for method, path in served if _is_scoped(path)}
+        missing = scoped - set(SCOPED_ENDPOINTS)
+        stale = set(SCOPED_ENDPOINTS) - scoped
+
+        assert not missing, (
+            "these scoped routes are not in SCOPED_ENDPOINTS, so nothing proves "
+            f"they reject another account: {sorted(missing)}"
+        )
+        assert not stale, f"SCOPED_ENDPOINTS lists routes that no longer exist: {sorted(stale)}"
+
     def test_every_scoped_endpoint_is_protected(
         self,
         client: TestClient,
@@ -139,64 +279,65 @@ class TestAuthorizationCoverage:
         project = client.post(
             "/api/v1/projects", json={"name": "Theirs"}, headers=owner_headers
         ).json()["id"]
+        # The fixture of record rather than a toy frame: a dataset with real
+        # defects is the only way to get a finding id to attempt access to.
         dataset = client.post(
             f"/api/v1/projects/{project}/datasets",
-            files={"file": ("data.csv", io.BytesIO(CSV), "text/csv")},
+            files={
+                "file": (
+                    "invalid_values.csv",
+                    io.BytesIO(sample_bytes("invalid_values.csv")),
+                    "text/csv",
+                )
+            },
             headers=owner_headers,
         ).json()
-        dataset_id = dataset["id"]
-        analysis_id = dataset["latest_analysis"]["id"]
+        findings = client.get(
+            f"/api/v1/datasets/{dataset['id']}/findings", headers=owner_headers
+        ).json()["items"]
+        assert findings, "the sample must produce findings, or the finding routes go untested"
+        finding = findings[0]
+
+        ids = {
+            "project_id": project,
+            "dataset_id": dataset["id"],
+            "analysis_id": dataset["latest_analysis"]["id"],
+            "finding_id": finding["id"],
+        }
 
         intruder = auth_headers(user)
-        forbidden = [
-            ("GET", f"/api/v1/projects/{project}"),
-            ("PATCH", f"/api/v1/projects/{project}"),
-            ("DELETE", f"/api/v1/projects/{project}"),
-            ("GET", f"/api/v1/projects/{project}/datasets"),
-            ("GET", f"/api/v1/projects/{project}/history"),
-            ("GET", f"/api/v1/projects/{project}/history/trend"),
-            ("GET", f"/api/v1/datasets/{dataset_id}"),
-            ("DELETE", f"/api/v1/datasets/{dataset_id}"),
-            ("POST", f"/api/v1/datasets/{dataset_id}/analyze"),
-            ("GET", f"/api/v1/datasets/{dataset_id}/statistics"),
-            ("GET", f"/api/v1/datasets/{dataset_id}/preview"),
-            ("GET", f"/api/v1/datasets/{dataset_id}/findings"),
-            ("GET", f"/api/v1/datasets/{dataset_id}/findings/summary"),
-            ("GET", f"/api/v1/datasets/{dataset_id}/anomalies"),
-            ("GET", f"/api/v1/datasets/{dataset_id}/anomalies/overview"),
-            ("GET", f"/api/v1/datasets/{dataset_id}/score"),
-            ("GET", f"/api/v1/datasets/{dataset_id}/history"),
-            ("GET", f"/api/v1/analyses/{analysis_id}/compare"),
-            ("POST", f"/api/v1/reports/{analysis_id}/export"),
-        ]
-
-        for method, path in forbidden:
-            response = client.request(method, path, headers=intruder, json={})
+        for method, template in SCOPED_ENDPOINTS:
+            path = template.format(**ids)
+            response = client.request(
+                method, path, headers=intruder, **_request_body(method, template)
+            )
             assert (
                 response.status_code == 404
-            ), f"{method} {path} leaked (got {response.status_code})"
+            ), f"{method} {template} leaked (got {response.status_code})"
 
-    def test_every_scoped_endpoint_requires_a_token(
-        self,
-        client: TestClient,
-        make_user: Callable[..., User],
-        auth_headers: Callable[[User], dict[str, str]],
-    ) -> None:
-        owner = make_user(email="owner2@example.com")
-        headers = auth_headers(owner)
-        project = client.post("/api/v1/projects", json={"name": "Theirs"}, headers=headers).json()[
-            "id"
-        ]
+    def test_every_scoped_endpoint_requires_a_token(self, client: TestClient) -> None:
+        """An anonymous caller is refused before any lookup happens.
 
-        for method, path in [
+        Real ids are unnecessary: the answer must not depend on whether the
+        resource exists, which is the same reason these routes answer 404
+        rather than 403 for a signed-in stranger.
+        """
+        placeholders = dict.fromkeys(OWNED_PATH_PARAMETERS, "does-not-matter")
+
+        for method, template in SCOPED_ENDPOINTS:
+            path = template.format(**placeholders)
+            response = client.request(method, path, **_request_body(method, template))
+            assert (
+                response.status_code == 401
+            ), f"{method} {template} did not require a token (got {response.status_code})"
+
+    def test_unscoped_endpoints_still_require_a_token(self, client: TestClient) -> None:
+        """The collection routes are scoped to the caller, not to a path id."""
+        for method, path in (
             ("GET", "/api/v1/projects"),
             ("POST", "/api/v1/projects"),
-            ("GET", f"/api/v1/projects/{project}"),
             ("GET", "/api/v1/auth/me"),
-            ("GET", "/api/v1/datasets/anything"),
-            ("GET", "/api/v1/datasets/anything/findings"),
-            ("POST", "/api/v1/reports/anything/export"),
-        ]:
+        ):
             response = client.request(method, path, json={})
             assert response.status_code == 401, f"{method} {path} did not require a token"
 
@@ -351,3 +492,95 @@ class TestInjection:
 
         assert created["name"] == payload
         assert authed_client.get(f"/api/v1/projects/{created['id']}").json()["name"] == payload
+
+
+class TestLoginRateLimiting:
+    """Repeated failures from one caller are slowed down.
+
+    The counter is keyed on the caller's address, never on the submitted
+    email - see ``app/core/ratelimit`` for why that distinction is the whole
+    point of the design.
+    """
+
+    def _fail_login(self, client: TestClient, email: str = "nobody@example.com"):
+        return client.post(
+            "/api/v1/auth/login", json={"email": email, "password": "definitely-wrong"}
+        )
+
+    def test_repeated_failures_are_eventually_refused(self, client: TestClient) -> None:
+        for _ in range(settings.login_max_attempts):
+            assert self._fail_login(client).status_code == 401
+
+        response = self._fail_login(client)
+        assert response.status_code == 429
+        assert response.json()["error"]["code"] == "rate_limited"
+
+    def test_the_refusal_says_how_long_to_wait(self, client: TestClient) -> None:
+        for _ in range(settings.login_max_attempts):
+            self._fail_login(client)
+
+        response = self._fail_login(client)
+        retry_after = int(response.headers["Retry-After"])
+        assert 0 < retry_after <= settings.login_attempt_window_seconds
+        assert response.json()["error"]["details"]["retry_after_seconds"] == retry_after
+
+    def test_being_limited_does_not_reveal_whether_an_account_exists(
+        self, client: TestClient, user: User
+    ) -> None:
+        """The 429 must be as uninformative as the 401 it replaces.
+
+        If a rate-limited response differed for a real account, the limiter
+        would have reintroduced exactly the enumeration oracle that the equal
+        401 responses were designed to remove.
+        """
+        for _ in range(settings.login_max_attempts):
+            self._fail_login(client)
+
+        real = self._fail_login(client, email=user.email)
+        unknown = self._fail_login(client, email="no-such-account@example.com")
+
+        assert real.status_code == unknown.status_code == 429
+        assert real.json()["error"]["message"] == unknown.json()["error"]["message"]
+        assert real.json()["error"]["code"] == unknown.json()["error"]["code"]
+
+    def test_the_right_password_is_refused_once_the_limit_is_reached(
+        self, client: TestClient, user: User
+    ) -> None:
+        """Otherwise the limit is no obstacle to guessing: the guess that
+        happens to be correct would still be accepted."""
+        for _ in range(settings.login_max_attempts):
+            self._fail_login(client)
+
+        response = client.post(
+            "/api/v1/auth/login", json={"email": user.email, "password": DEFAULT_PASSWORD}
+        )
+        assert response.status_code == 429
+
+    def test_signing_in_successfully_clears_the_count(self, client: TestClient, user: User) -> None:
+        """A person who mistypes their password a few times, then gets it
+        right, must not be closer to a lockout than someone who never did."""
+        for _ in range(settings.login_max_attempts - 1):
+            assert self._fail_login(client).status_code == 401
+
+        good = client.post(
+            "/api/v1/auth/login", json={"email": user.email, "password": DEFAULT_PASSWORD}
+        )
+        assert good.status_code == 200
+
+        for _ in range(settings.login_max_attempts - 1):
+            assert self._fail_login(client).status_code == 401
+
+    def test_registration_is_not_blocked_by_login_failures(self, client: TestClient) -> None:
+        """The limit belongs to the login endpoint, not to the whole API."""
+        for _ in range(settings.login_max_attempts + 2):
+            self._fail_login(client)
+
+        response = client.post(
+            "/api/v1/auth/register",
+            json={
+                "email": "new.person@example.com",
+                "password": DEFAULT_PASSWORD,
+                "full_name": "New Person",
+            },
+        )
+        assert response.status_code == 201

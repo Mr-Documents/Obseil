@@ -29,9 +29,12 @@ class ObseilError(Exception):
         *,
         details: dict[str, Any] | None = None,
         code: str | None = None,
+        headers: dict[str, str] | None = None,
     ) -> None:
         self.message = message or self.message
         self.details = details or {}
+        #: Response headers the error itself requires, such as `Retry-After`.
+        self.headers = headers or {}
         if code:
             self.code = code
         super().__init__(self.message)
@@ -78,6 +81,26 @@ class UnsupportedMediaTypeError(ObseilError):
     status_code = 415
     code = "unsupported_media_type"
     message = "This file type is not supported."
+
+
+class RateLimitedError(ObseilError):
+    """Too many failed attempts from this caller.
+
+    The message deliberately says nothing about which account was being tried,
+    so that a rate-limited response is not an account-enumeration oracle.
+    """
+
+    status_code = 429
+    code = "rate_limited"
+    message = "Too many attempts. Please wait before trying again."
+
+    def __init__(self, retry_after: int, message: str | None = None) -> None:
+        super().__init__(
+            message,
+            details={"retry_after_seconds": retry_after},
+            headers={"Retry-After": str(retry_after)},
+        )
+        self.retry_after = retry_after
 
 
 # --- Domain specific --------------------------------------------------------
