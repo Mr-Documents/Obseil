@@ -2,6 +2,7 @@ import { type FormEvent, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import { Alert } from '@/components/ui/Alert';
+import { OAuthButtons } from '@/components/auth/OAuthButtons';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/hooks/authContext';
@@ -57,6 +58,8 @@ export function LoginPage() {
         </>
       }
     >
+      <OAuthButtons action="Continue" />
+
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         {formError && <Alert tone="danger">{formError}</Alert>}
 

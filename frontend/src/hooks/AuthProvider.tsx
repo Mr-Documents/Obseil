@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { authApi } from '@/services/authApi';
+import { oauthApi } from '@/services/oauthApi';
 import { tokenStore } from '@/services/tokenStore';
 import type { LoginPayload, RegisterPayload, User } from '@/types/api';
 
@@ -73,6 +74,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return created;
   }, []);
 
+  const completeOAuth = useCallback(async (code: string) => {
+    // The provider half already happened in the API; all that is left is to
+    // trade the one-time code for tokens and adopt the session.
+    const { user: signedIn } = await oauthApi.exchange(code);
+    setUser(signedIn);
+    setStatus('authenticated');
+  }, []);
+
   const logout = useCallback(async () => {
     await authApi.logout();
     setUser(null);
@@ -89,8 +98,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
+      completeOAuth,
     }),
-    [user, status, login, register, logout],
+    [user, status, login, register, logout, completeOAuth],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

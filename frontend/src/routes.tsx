@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { RedirectIfAuthenticated, RequireAuth } from '@/components/RequireAuth';
 import { AppLayout } from '@/layouts/AppLayout';
 import { LoginPage } from '@/pages/auth/LoginPage';
+import { OAuthCallbackPage } from '@/pages/auth/OAuthCallbackPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
 import { DatasetAnomaliesPage } from '@/pages/datasets/DatasetAnomaliesPage';
 import { DatasetColumnsPage } from '@/pages/datasets/DatasetColumnsPage';
@@ -42,6 +43,10 @@ export function AppRoutes() {
           </RedirectIfAuthenticated>
         }
       />
+
+      {/* Not wrapped in `RedirectIfAuthenticated`: the visitor is still
+          anonymous when they land here, and the page is what makes them not. */}
+      <Route path="/auth/callback" element={<OAuthCallbackPage />} />
 
       <Route
         element={

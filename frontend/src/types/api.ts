@@ -407,3 +407,9 @@ export interface TrendPoint {
   finding_count: number;
   dataset_name: string;
 }
+
+/** A third-party sign-in provider this deployment has credentials for. */
+export interface OAuthProviderInfo {
+  name: string;
+  label: string;
+}

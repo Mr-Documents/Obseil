@@ -11,6 +11,7 @@ from app.api.v1.routes import (
     findings,
     health,
     history,
+    oauth,
     projects,
     reports,
 )
@@ -18,6 +19,7 @@ from app.api.v1.routes import (
 api_router = APIRouter()
 api_router.include_router(health.router)
 api_router.include_router(auth.router)
+api_router.include_router(oauth.router)
 api_router.include_router(projects.router)
 api_router.include_router(datasets.router)
 api_router.include_router(findings.router)

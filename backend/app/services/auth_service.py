@@ -102,6 +102,15 @@ def authenticate_user(db: Session, *, email: str, password: str) -> User:
         logger.info("Login failed: unknown email")
         raise AuthenticationError("Incorrect email or password.", code="invalid_credentials")
 
+    if user.hashed_password is None:
+        # An account created through Google or GitHub has no password. Verify
+        # against the dummy hash anyway so this answers in the same time, and
+        # with the same message, as a wrong password would - otherwise the
+        # login form would reveal which addresses are provider-only accounts.
+        verify_password(password, _DUMMY_HASH)
+        logger.info("Login failed: account has no password", extra={"user_id": user.id})
+        raise AuthenticationError("Incorrect email or password.", code="invalid_credentials")
+
     if not verify_password(password, user.hashed_password):
         logger.info("Login failed: bad password", extra={"user_id": user.id})
         raise AuthenticationError("Incorrect email or password.", code="invalid_credentials")

@@ -71,3 +71,53 @@ export function errorResponse(
 ): Response {
   return jsonResponse({ error: { code, message, details, request_id: 'test-request-id' } }, status);
 }
+
+/**
+ * Answer the sign-in provider list, then defer to `handler`.
+ *
+ * Auth pages ask which OAuth providers are configured as soon as they mount.
+ * Tests about the password form should not have to know or care, and asserting
+ * on `mock.calls[0]` would silently start reading the wrong request the moment
+ * any background call is added. Pair this with `fetchCallTo`.
+ */
+export function mockApiFetch(
+  fetchMock: { mockImplementation: (fn: (url: string) => Promise<Response>) => unknown },
+  handler: (url: string) => Response | Promise<Response>,
+): void {
+  fetchMock.mockImplementation(async (url: string) => {
+    if (String(url).includes('/auth/oauth/providers')) return jsonResponse([]);
+    return handler(String(url));
+  });
+}
+
+/** The first recorded call whose URL contains `fragment`. */
+export function fetchCallTo(
+  fetchMock: { mock: { calls: unknown[][] } },
+  fragment: string,
+): [string, RequestInit] {
+  const call = fetchMock.mock.calls.find(([url]) => String(url).includes(fragment));
+  if (!call) {
+    const seen = fetchMock.mock.calls.map(([url]) => String(url)).join(', ') || 'nothing';
+    throw new Error(`No request to "${fragment}". Requests made: ${seen}`);
+  }
+  return call as [string, RequestInit];
+}
+
+/** Assert no request was made to `fragment`, ignoring unrelated background calls. */
+export function expectNoRequestTo(
+  fetchMock: { mock: { calls: unknown[][] } },
+  fragment: string,
+): void {
+  const matched = fetchMock.mock.calls.filter(([url]) => String(url).includes(fragment));
+  if (matched.length > 0) {
+    throw new Error(`Expected no request to "${fragment}", but ${matched.length} was made.`);
+  }
+}
+
+/** The JSON body of a recorded request, with a useful error if it is not JSON. */
+export function jsonBody(init: RequestInit): unknown {
+  if (typeof init.body !== 'string') {
+    throw new Error(`Expected a JSON string body, got ${typeof init.body}.`);
+  }
+  return JSON.parse(init.body);
+}

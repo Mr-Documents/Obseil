@@ -11,6 +11,8 @@ export interface AuthContextValue {
   login: (payload: LoginPayload) => Promise<User>;
   register: (payload: RegisterPayload) => Promise<User>;
   logout: () => Promise<void>;
+  /** Trade a provider handoff code for a session. */
+  completeOAuth: (code: string) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null);

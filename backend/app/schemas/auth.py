@@ -81,3 +81,16 @@ class AuthResponse(BaseModel):
 
     user: UserRead
     tokens: TokenPair
+
+
+class OAuthProviderInfo(BaseModel):
+    """A sign-in provider the deployment has credentials for."""
+
+    name: str
+    label: str
+
+
+class OAuthExchangeRequest(BaseModel):
+    """The single-use code the callback handed to the browser."""
+
+    code: Annotated[str, Field(min_length=16, max_length=256)]

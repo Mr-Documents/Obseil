@@ -101,6 +101,59 @@ inventing a new address per request.
 A distributed attack across many addresses is not stopped here. That belongs at
 the proxy or WAF layer, which can see the whole fleet.
 
+
+### Third-party sign-in
+
+Google and GitHub, using the **authorization code flow with PKCE, run entirely
+on the server**. The browser never holds the client secret and never sees a
+provider token.
+
+| Control | Why |
+| --- | --- |
+| The code exchange happens server-side | The profile then arrives over a direct TLS connection with the provider, so it needs no further proof. Accepting an id token from the browser would mean verifying it against the provider's rotating keys, which is easy to get subtly wrong |
+| CSRF `state`, in a signed httpOnly cookie | Without it, an attacker can feed a victim a callback URL carrying the attacker's code and attach their identity to the victim's session |
+| PKCE (S256) | Binds the callback to the browser that started the flow. GitHub ignores it today; sending it costs nothing and is already correct if they honour it |
+| The state cookie is a JWT with `type: oauth_state` | The same discipline access and refresh tokens use, so a state cookie can never be presented as a credential |
+| The cookie is cleared on use | A stale attempt cannot be replayed against a later callback |
+| Provider errors are logged, not shown | A provider's message can name the client id and the exact reason it failed |
+
+**Account linking is the part that carries the security of this feature.** A
+provider identity attaches to an existing Obseil account **only when the
+provider states it has verified the email address**.
+
+Auto-linking on an unverified address is one of the classic OAuth
+account-takeover routes: anybody able to create a provider account claiming
+`someone@company.com` would be handed the Obseil account belonging to that
+address. Obseil refuses the sign-in instead, and
+`test_an_unverified_email_never_links_to_an_existing_account` is what keeps it
+that way.
+
+Two smaller decisions follow from the same reasoning:
+
+- **The provider's subject id is the identity, never the email.** Addresses can
+  be changed and reassigned; the subject identifier cannot. A user who changes
+  their Google address keeps the same Obseil account, and their old address
+  becoming somebody else's grants that person nothing.
+- **A provider never changes an account's login email.** Otherwise a change at
+  the provider would silently move an Obseil login.
+
+An account created this way has **no password at all** - `hashed_password` is
+null rather than an unguessable string. `authenticate_user` treats null as
+"cannot be signed into with a password", verifies against the dummy hash anyway
+so the timing does not change, and returns the same message as a wrong
+password. Without that last part, the login form would reveal which addresses
+are provider-only accounts.
+
+Tokens are never put in a redirect URL. The callback hands the SPA a
+**single-use code valid for sixty seconds**, which it posts back for the real
+token pair. Tokens in a URL - query or fragment - end up in browser history; a
+code that leaks is worthless once redeemed, and worthless a minute later
+regardless.
+
+Obseil ships with **no provider credentials**, and a provider without them is
+absent from `/auth/oauth/providers` entirely, so the UI never renders a button
+that could only fail.
+
 ---
 
 ## 2. Tokens
@@ -286,3 +339,4 @@ deliberate deferral.
 | Tokens in `localStorage` | Standard SPA trade-off, mitigated by short expiry and no third-party scripts | httpOnly refresh cookie + in-memory access token |
 | No server-side token revocation | Stateless JWTs; logout is client-side | A revocation list keyed on the `jti` claim, which every token already carries |
 | No audit log | Structured request logs cover the operational need | An append-only table of security-relevant actions |
+| A provider account cannot yet be unlinked | Nothing is lost: the password path and other providers still work | A settings screen listing linked identities, with the last sign-in method protected |

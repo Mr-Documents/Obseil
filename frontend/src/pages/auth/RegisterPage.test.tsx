@@ -2,7 +2,15 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { errorResponse, jsonResponse, renderWithProviders } from '@/test/utils';
+import {
+  errorResponse,
+  expectNoRequestTo,
+  fetchCallTo,
+  jsonBody,
+  jsonResponse,
+  mockApiFetch,
+  renderWithProviders,
+} from '@/test/utils';
 
 import { RegisterPage } from './RegisterPage';
 
@@ -34,7 +42,7 @@ describe('RegisterPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /create account/i }));
 
     expect(await screen.findByText(/use at least 8 characters/i)).toBeInTheDocument();
-    expect(fetchMock).not.toHaveBeenCalled();
+    expectNoRequestTo(fetchMock, '/auth/register');
   });
 
   it('requires a letter and a number in the password', async () => {
@@ -44,7 +52,7 @@ describe('RegisterPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /create account/i }));
 
     expect(await screen.findByText(/one letter and one number/i)).toBeInTheDocument();
-    expect(fetchMock).not.toHaveBeenCalled();
+    expectNoRequestTo(fetchMock, '/auth/register');
   });
 
   it('rejects a malformed email before submitting', async () => {
@@ -54,11 +62,11 @@ describe('RegisterPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /create account/i }));
 
     expect(await screen.findByText(/valid email address/i)).toBeInTheDocument();
-    expect(fetchMock).not.toHaveBeenCalled();
+    expectNoRequestTo(fetchMock, '/auth/register');
   });
 
   it('submits a valid registration', async () => {
-    fetchMock.mockResolvedValue(
+    mockApiFetch(fetchMock, () =>
       jsonResponse(
         {
           user: {
@@ -82,10 +90,9 @@ describe('RegisterPage', () => {
     await fillForm();
     await userEvent.click(screen.getByRole('button', { name: /create account/i }));
 
-    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
-    const [url, init] = fetchMock.mock.calls[0];
+    const [url, init] = await waitFor(() => fetchCallTo(fetchMock, '/auth/register'));
     expect(url).toContain('/auth/register');
-    expect(JSON.parse(init.body)).toEqual({
+    expect(jsonBody(init)).toEqual({
       full_name: 'Ada Lovelace',
       email: 'ada@example.com',
       password: 'analytical1843',
@@ -93,7 +100,7 @@ describe('RegisterPage', () => {
   });
 
   it('surfaces a duplicate-email conflict from the server', async () => {
-    fetchMock.mockResolvedValue(
+    mockApiFetch(fetchMock, () =>
       errorResponse(
         409,
         'email_already_registered',

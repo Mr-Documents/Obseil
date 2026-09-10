@@ -68,6 +68,21 @@ class Settings(BaseSettings):
     # below `MINIMUM_PRODUCTION_HASH_ROUNDS` outside development.
     password_hash_rounds: Annotated[int, Field(ge=4, le=18)] = 12
 
+    # --- Third-party sign-in -----------------------------------------------
+    # Empty by default: credentials belong to whoever runs this deployment, and
+    # a provider without them is not offered in the UI at all. Register the
+    # application with each provider and set the callback to
+    # <api_base_url>/api/v1/auth/oauth/<provider>/callback.
+    oauth_google_client_id: str = ""
+    oauth_google_client_secret: str = ""
+    oauth_github_client_id: str = ""
+    oauth_github_client_secret: str = ""
+    #: Public origin of this API, used to build the redirect URI the provider
+    #: sends the browser back to. Must match what is registered with them.
+    api_base_url: str = "http://localhost:8000"
+    #: Where to send the browser once sign-in succeeds.
+    frontend_base_url: str = "http://localhost:5173"
+
     login_rate_limit_enabled: bool = True
     login_max_attempts: Annotated[int, Field(gt=0, le=1000)] = 10
     login_attempt_window_seconds: Annotated[int, Field(gt=0, le=86_400)] = 300

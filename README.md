@@ -75,6 +75,10 @@ because no single-column rule can see joint structure.
 returned with its full derivation: which findings cost how much, capped per
 dimension. The UI shows the same arithmetic the API returns.
 
+**Sign-in.** Email and password, or **Continue with Google / GitHub** when the
+deployment configures them - authorization code flow with PKCE, run server-side,
+with account linking allowed only on a provider-verified email address.
+
 **Triage.** Every finding can be marked reviewed, resolved or dismissed, with a
 note. Feedback is recorded against the finding, so a false positive can be
 suppressed without pretending it was never detected.
@@ -151,6 +155,7 @@ Four decisions worth knowing about:
 | ----- | ------ |
 | Frontend | React 18, TypeScript (strict), Vite 6, Tailwind CSS v4, Recharts, React Router, TanStack Query |
 | Backend | Python 3.11+, FastAPI, Pydantic v2, SQLAlchemy 2.0, Alembic |
+| Auth | bcrypt, PyJWT, OAuth 2.0 + PKCE (Google, GitHub) |
 | Data / ML | pandas, NumPy, scikit-learn (Isolation Forest) |
 | Database | PostgreSQL 16 |
 | Reports | ReportLab (PDF) |
@@ -301,6 +306,10 @@ The ones worth knowing:
 | `OBSEIL_ANOMALY_CONTAMINATION` | `auto` | Overrides the derived threshold |
 | `OBSEIL_LOGIN_MAX_ATTEMPTS` | 10 | Failed logins per client address before a 429; raise it if your users share one outbound address |
 | `OBSEIL_PASSWORD_HASH_ROUNDS` | 12 | bcrypt work factor; production refuses anything lower |
+| `OBSEIL_OAUTH_GOOGLE_CLIENT_ID` / `_SECRET` | *(empty)* | Enables "Continue with Google"; blank means the button is not shown |
+| `OBSEIL_OAUTH_GITHUB_CLIENT_ID` / `_SECRET` | *(empty)* | Enables "Continue with GitHub" |
+| `OBSEIL_API_BASE_URL` | `http://localhost:8000` | Public API origin, used to build the provider callback URL |
+| `OBSEIL_FRONTEND_BASE_URL` | `http://localhost:5173` | Where the browser is sent after a provider sign-in |
 
 Generate a secret with:
 
@@ -308,9 +317,24 @@ Generate a secret with:
 python -c "import secrets; print(secrets.token_urlsafe(48))"
 ```
 
+### Enabling Google or GitHub sign-in
+
+Both are optional and off by default. Register an application with the
+provider, set the callback URL it asks for to
+`<OBSEIL_API_BASE_URL>/api/v1/auth/oauth/<provider>/callback`, and put the
+client id and secret in your `.env`:
+
+| Provider | Where | Callback URL to register |
+| --- | --- | --- |
+| Google | Cloud Console -> APIs & Services -> Credentials -> OAuth client ID (Web application) | `http://localhost:8000/api/v1/auth/oauth/google/callback` |
+| GitHub | Settings -> Developer settings -> OAuth Apps -> New OAuth App | `http://localhost:8000/api/v1/auth/oauth/github/callback` |
+
+The buttons appear on the sign-in and registration pages as soon as
+credentials are present, and disappear again when they are not.
+
 ## Testing
 
-**578 tests**: 446 backend, 120 frontend, 12 end-to-end scenarios (the journey
+**645 tests**: 507 backend, 126 frontend, 12 end-to-end scenarios (the journey
 runs at both desktop and phone widths).
 
 ```bash
