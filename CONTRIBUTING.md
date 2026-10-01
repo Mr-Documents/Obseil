@@ -99,7 +99,7 @@ produces states what was observed, where, and by which method.
 ## Adding an anomaly detector
 
 1. Create a module in `backend/app/ml/detectors/`.
-2. Subclass `AnomalyDetector` and implement `fit_predict(features) -> AnomalyResult`.
+2. Subclass `AnomalyDetector` and implement `detect(features) -> AnomalyResult`.
 3. Register it in `backend/app/ml/registry.py`.
 4. Add a unit test with a synthetic dataset containing known anomalies.
 5. Explain the method - and its limitations - in `docs/METHODOLOGY.md`.
