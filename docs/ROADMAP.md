@@ -1001,6 +1001,7 @@ docs/
   SECURITY_REVIEW.md      grows - connectors, secrets, PAT handling, LLM data flow
   PERFORMANCE.md          grows - pushdown, queue, re-measured ceilings
   adr/NNNN-title.md       new - one decision record per contested choice
+  phases/NN-slug.md       new - one build plan per phase, written before its first commit
 ```
 
 **Architecture decision records are the structural addition worth arguing for**,
