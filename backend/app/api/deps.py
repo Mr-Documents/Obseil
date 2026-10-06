@@ -18,9 +18,10 @@ from app.core.errors import AuthenticationError
 from app.core.security import decode_token
 from app.db.session import get_db
 from app.models.project import Project
+from app.models.rule import Rule
 from app.models.user import User
 from app.schemas.common import PaginationParams
-from app.services import auth_service, project_service
+from app.services import auth_service, project_service, rule_service
 
 # auto_error=False so a missing header raises our own error envelope rather
 # than Starlette's bare {"detail": ...}.
@@ -58,6 +59,14 @@ def get_project(project_id: str, db: DbSession, user: CurrentUser) -> Project:
 
 
 OwnedProject = Annotated[Project, Depends(get_project)]
+
+
+def get_rule(rule_id: str, db: DbSession, user: CurrentUser) -> Rule:
+    """Path-parameter dependency that also enforces ownership."""
+    return rule_service.get_owned_rule(db, rule_id=rule_id, user=user)
+
+
+OwnedRule = Annotated[Rule, Depends(get_rule)]
 
 
 def pagination(

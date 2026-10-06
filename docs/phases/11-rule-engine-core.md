@@ -119,7 +119,7 @@ canary rather than being edited to accommodate the new feature.
 | `app/quality/scoring.py` | edit | Honour an author-chosen dimension; remove the silent default |
 | `app/schemas/rule.py` | new | `RuleCreate` / `RuleUpdate` / `RuleRead` |
 | `app/services/rule_service.py` | new | CRUD, the ownership choke point, `active_rule_specs` |
-| `app/api/v1/routes/rules.py` | new | Five endpoints |
+| `app/api/v1/routes/rules.py` | new | Six endpoints (five CRUD + predicate discovery) |
 | `app/api/v1/router.py` | edit | `api_router.include_router(rules.router)` |
 | `app/api/deps.py` | edit | `OwnedRule` dependency |
 | `app/services/finding_service.py` | edit | Persist `rule_id` / `rule_version` |
@@ -232,12 +232,43 @@ phase 13, and phase 20's learned severity groups feedback by rule.
 
 ### Done when
 
-- Full CRUD works and is covered by `tests/api/test_rules.py`.
-- A rule belonging to another account returns 404 from every endpoint.
-- `tests/api/test_security.py` is updated (see §8) and green.
-- Creating two rules with the same name in one project returns 409.
+- Full CRUD works and is covered by `tests/api/test_rules.py`. ✅
+- A rule belonging to another account returns 404 from every endpoint. ✅
+- `tests/api/test_security.py` is updated (see §8) and green. ✅
+- Creating two rules with the same name in one project returns 409. ✅
 - `alembic upgrade head`, `downgrade`, `upgrade` round-trips, and
-  `alembic check` reports no drift.
+  `alembic check` reports no drift. ✅
+
+**Status: shipped.** 570 backend tests pass (up from 507), with ruff, black and
+mypy clean, and the migration round-trip verified including `alembic check`
+reporting no model drift.
+
+Two deliberate deviations from this plan, recorded rather than quietly made:
+
+1. **Version bumping landed here, not in slice 4.** It is eight lines in
+   `update_rule`, and leaving `version` as a column nothing ever changed would
+   have been a trap for slice 2, which writes `rule_version` onto findings. A
+   column that is always `1` is worse than no column.
+2. **A sixth endpoint, `GET /rules/predicates`.** It returns each predicate's
+   label, summary and `model_json_schema()`. Unplanned, but it falls out of the
+   registry for free and is what lets phase 13 generate its builder forms from
+   the backend instead of duplicating a form per predicate. It is declared
+   *before* `/rules/{rule_id}` because FastAPI matches in declaration order -
+   otherwise "predicates" is read as a rule id, and there is a test asserting
+   it is not.
+
+Two bugs the tests caught, both worth naming because they are the kind that
+ship silently:
+
+- `RangeParameters` rejected boolean bounds in a place the check could never
+  run: `Bound = float | str`, so Pydantic coerces `true` to `1.0` *before* a
+  model validator sees it. The guard had to move to `mode="before"`. The test
+  that caught it was written because `bool` being an `int` subclass was already
+  on my mind - the guard itself was simply in the wrong place.
+- Adding `rule_id` to `OWNED_PATH_PARAMETERS` made the authorisation matrix
+  demand a `rule_id` the test never created, so `template.format(**ids)` raised
+  `KeyError`. That is the matrix working as designed: it refuses to let a
+  scoped route be listed without something actually exercising it.
 
 ---
 
@@ -452,11 +483,15 @@ time**, because a rule stored before a predicate changed must not be trusted.
 
 ### Rule versioning
 
-`update_rule` compares the **semantic** fields - `predicate`, `parameters`,
-`severity`, `dimension`, `column_name` - and bumps `version` when any changed.
-Renaming a rule or editing its description does not bump it. Findings record
-`rule_version`, so a history that spans a rule change says which definition
-judged each run.
+**The service-side half of this shipped in slice 1** - see that slice's status
+note for why. `update_rule` compares the semantic fields (`predicate`,
+`parameters`, `severity`, `dimension`, `column_name`) and bumps `version` when
+any changed; renaming a rule or editing its description does not.
+
+What remains for this slice is the half that needs execution: findings must
+record the `rule_version` that judged them, which is wired where slice 2 writes
+`rule_id`, so that a history spanning a rule change can say which definition
+applied rather than implying one always did.
 
 Deliberate limitation, stated rather than hidden: the previous definition is not
 retained, so you can know a rule differed but not what it was. A `rule_versions`

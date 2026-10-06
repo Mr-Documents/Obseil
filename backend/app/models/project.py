@@ -11,6 +11,7 @@ from app.db.base import ID_LENGTH, Base, TimestampMixin, UUIDPrimaryKeyMixin
 
 if TYPE_CHECKING:
     from app.models.dataset import Dataset
+    from app.models.rule import Rule
     from app.models.user import User
 
 
@@ -44,6 +45,12 @@ class Project(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
         order_by="Dataset.created_at.desc()",
+    )
+    rules: Mapped[list[Rule]] = relationship(
+        back_populates="project",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        order_by="Rule.created_at",
     )
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid

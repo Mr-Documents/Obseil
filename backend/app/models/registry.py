@@ -13,6 +13,7 @@ from app.models.dataset import Dataset, DatasetAnalysis
 from app.models.finding import Finding, FindingFeedback
 from app.models.oauth_account import OAuthAccount
 from app.models.project import Project
+from app.models.rule import Rule
 from app.models.user import User
 
 __all__ = [
@@ -24,5 +25,6 @@ __all__ = [
     "FindingFeedback",
     "OAuthAccount",
     "Project",
+    "Rule",
     "User",
 ]

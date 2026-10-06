@@ -94,6 +94,20 @@ class Finding(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     details: Mapped[dict[str, Any] | None] = mapped_column(JSONColumn, nullable=True)
     sample_row_indices: Mapped[list[Any] | None] = mapped_column(JSONColumn, nullable=True)
 
+    #: Set when this finding came from a user-defined rule rather than a
+    #: built-in detector. ``ON DELETE SET NULL`` rather than cascade: deleting
+    #: the rule must not delete the record of what it found, because a finding
+    #: is evidence of what one specific run saw.
+    rule_id: Mapped[str | None] = mapped_column(
+        String(ID_LENGTH),
+        ForeignKey("rules.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    #: The rule's version at the time of the run, so a history spanning a rule
+    #: change can say which definition applied.
+    rule_version: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
     status: Mapped[str] = mapped_column(
         Enum(FindingStatus, native_enum=False, length=16, validate_strings=True),
         nullable=False,

@@ -31,7 +31,9 @@ CSV = b"id,amount\n1,10.5\n2,20.0\n"
 
 #: Path parameters that name a resource somebody owns. Any route carrying one
 #: has to reject an id belonging to another account.
-OWNED_PATH_PARAMETERS = frozenset({"project_id", "dataset_id", "analysis_id", "finding_id"})
+OWNED_PATH_PARAMETERS = frozenset(
+    {"project_id", "dataset_id", "analysis_id", "finding_id", "rule_id"}
+)
 
 #: Every resource-scoped endpoint, as (method, path template).
 #:
@@ -64,11 +66,16 @@ SCOPED_ENDPOINTS: tuple[tuple[str, str], ...] = (
     ("PATCH", "/api/v1/findings/{finding_id}"),
     ("GET", "/api/v1/analyses/{analysis_id}/compare"),
     ("POST", "/api/v1/reports/{analysis_id}/export"),
+    ("GET", "/api/v1/projects/{project_id}/rules"),
+    ("POST", "/api/v1/projects/{project_id}/rules"),
+    ("GET", "/api/v1/rules/{rule_id}"),
+    ("PATCH", "/api/v1/rules/{rule_id}"),
+    ("DELETE", "/api/v1/rules/{rule_id}"),
 )
 
 #: A walk that finds nothing would make every check below vacuously pass, so
 #: the enumeration is asserted against a floor. Raise it as routes are added.
-MINIMUM_EXPECTED_ROUTES = 25
+MINIMUM_EXPECTED_ROUTES = 30
 
 
 def _request_body(method: str, template: str) -> dict[str, Any]:
@@ -85,6 +92,21 @@ def _request_body(method: str, template: str) -> dict[str, Any]:
         # the handler runs. Without a valid body the request would 422 and
         # never reach the ownership check this test exists to exercise.
         return {"json": {"status": "reviewed"}}
+    if method == "POST" and template.endswith("/rules"):
+        # Same trap: rule creation validates its payload before the ownership
+        # check runs, so an empty body would 422 and look like a pass.
+        return {
+            "json": {
+                "name": "Ownership probe",
+                "column_name": "id",
+                "predicate": "not_null",
+                "parameters": {},
+                "severity": "medium",
+                "dimension": "completeness",
+            }
+        }
+    if method == "PATCH" and template.endswith("/rules/{rule_id}"):
+        return {"json": {"enabled": False}}
     return {"json": {}}
 
 
@@ -298,11 +320,28 @@ class TestAuthorizationCoverage:
         assert findings, "the sample must produce findings, or the finding routes go untested"
         finding = findings[0]
 
+        rule = client.post(
+            f"/api/v1/projects/{project}/rules",
+            json={
+                "name": "Owner's rule",
+                "column_name": "amount",
+                "predicate": "not_null",
+                "parameters": {},
+                "severity": "medium",
+                "dimension": "completeness",
+            },
+            headers=owner_headers,
+        ).json()
+        assert (
+            "id" in rule
+        ), f"the owner's rule was not created, so the rule routes go untested: {rule}"
+
         ids = {
             "project_id": project,
             "dataset_id": dataset["id"],
             "analysis_id": dataset["latest_analysis"]["id"],
             "finding_id": finding["id"],
+            "rule_id": rule["id"],
         }
 
         intruder = auth_headers(user)
